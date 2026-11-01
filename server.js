@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const { neon, neonConfig } = require('@neondatabase/serverless');
 
 // WebSocket setup for serverless driver if needed in Node.js
@@ -16,6 +17,32 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
+
+// Pre-load index.html for instant Vercel serverless response
+let indexHtml = '';
+try {
+  indexHtml = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+} catch (e) {
+  console.warn('Could not pre-read index.html:', e.message);
+}
+
+// Explicit Root Routes (Prevents "Cannot GET /" error on Vercel)
+app.get(['/', '/index.html'], (req, res) => {
+  if (indexHtml) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.send(indexHtml);
+  }
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/manifest.json', (req, res) => {
+  const manifestPath = path.join(__dirname, 'manifest.json');
+  if (fs.existsSync(manifestPath)) {
+    res.setHeader('Content-Type', 'application/json');
+    return res.sendFile(manifestPath);
+  }
+  res.status(404).json({ error: 'Not found' });
+});
 
 // -------------------------------------------------------------
 // NEON DATABASE CONNECTION
@@ -256,6 +283,18 @@ app.delete('/api/history', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// Fallback route for SPA pages
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    return next();
+  }
+  if (indexHtml) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.send(indexHtml);
+  }
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 if (!process.env.VERCEL) {
