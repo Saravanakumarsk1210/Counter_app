@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const { neon, neonConfig } = require('@neondatabase/serverless');
 
 // WebSocket setup for serverless driver if needed in Node.js
@@ -145,6 +146,31 @@ async function initializeDatabase() {
       ON counter_history (timestamp DESC);
     `;
 
+    // 3. Admin Persistent Sessions Table
+    await sql`
+      CREATE TABLE IF NOT EXISTS admin_sessions (
+        token VARCHAR(128) PRIMARY KEY,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        expires_at TIMESTAMPTZ NOT NULL
+      );
+    `;
+
+    // 4. Protected Admin Audit Log Table (not erased by history purge or factory reset)
+    await sql`
+      CREATE TABLE IF NOT EXISTS admin_audit_log (
+        id VARCHAR(64) PRIMARY KEY,
+        timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        action VARCHAR(64) NOT NULL,
+        details TEXT NOT NULL,
+        performed_by VARCHAR(64) NOT NULL DEFAULT 'Admin'
+      );
+    `;
+
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_admin_audit_timestamp 
+      ON admin_audit_log (timestamp DESC);
+    `;
+
     isDbInitialized = true;
     console.log('[Neon DB] ✅ Production schema initialized successfully.');
   } catch (err) {
@@ -221,7 +247,104 @@ app.get('/api/state', async (req, res) => {
   }
 });
 
-// GET History from Neon DB
+// -------------------------------------------------------------
+// ADMIN AUTH & ROLE PERMISSIONS
+// -------------------------------------------------------------
+const ADMIN_PASSKEY = process.env.ADMIN_PIN || "1968";
+
+// Check if request has a valid, unexpired Admin session token
+async function isValidAdminSession(req) {
+  const authHeader = req.headers['authorization'] || '';
+  const token = authHeader.startsWith('Bearer ') 
+    ? authHeader.slice(7).trim() 
+    : (req.headers['x-admin-token'] || req.query.token || '');
+
+  if (!token) return false;
+
+  if (sql && isDbConnected) {
+    try {
+      const rows = await sql`
+        SELECT token FROM admin_sessions 
+        WHERE token = ${token} AND expires_at > NOW() 
+        LIMIT 1
+      `;
+      return rows.length > 0;
+    } catch (err) {
+      console.warn('[Auth] Token verification check failed:', err.message);
+      return false;
+    }
+  }
+  return false;
+}
+
+// 1. Admin Authentication Login
+app.post('/api/auth/login', async (req, res) => {
+  const { passkey, pin } = req.body || {};
+  const submitted = String(passkey || pin || '').trim();
+
+  if (submitted === ADMIN_PASSKEY) {
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30-day session
+
+    if (sql && isDbConnected) {
+      try {
+        await sql`
+          INSERT INTO admin_sessions (token, expires_at)
+          VALUES (${token}, ${expiresAt})
+        `;
+        await sql`
+          INSERT INTO admin_audit_log (id, timestamp, action, details, performed_by)
+          VALUES (${'audit_' + Date.now()}, NOW(), 'ADMIN_LOGIN', 'Administrator authenticated successfully via passkey', 'Admin')
+        `;
+      } catch (e) {
+        console.warn('[Auth] Could not insert session in DB:', e.message);
+      }
+    }
+
+    return res.json({ 
+      success: true, 
+      token, 
+      role: 'Admin',
+      message: 'Admin authenticated successfully' 
+    });
+  }
+
+  return res.status(401).json({ 
+    success: false, 
+    error: 'Invalid administrator credentials. Please check the passkey and try again.' 
+  });
+});
+
+// 2. Admin Session Verification
+app.get('/api/auth/verify', async (req, res) => {
+  const valid = await isValidAdminSession(req);
+  if (valid) {
+    return res.json({ valid: true, role: 'Admin' });
+  }
+  return res.status(401).json({ valid: false, error: 'Session expired or invalid' });
+});
+
+// 3. Admin Logout
+app.post('/api/auth/logout', async (req, res) => {
+  const authHeader = req.headers['authorization'] || '';
+  const token = authHeader.startsWith('Bearer ') 
+    ? authHeader.slice(7).trim() 
+    : (req.headers['x-admin-token'] || '');
+
+  if (token && sql && isDbConnected) {
+    try {
+      await sql`DELETE FROM admin_sessions WHERE token = ${token}`;
+      await sql`
+        INSERT INTO admin_audit_log (id, timestamp, action, details, performed_by)
+        VALUES (${'audit_' + Date.now()}, NOW(), 'ADMIN_LOGOUT', 'Administrator logged out of session', 'Admin')
+      `;
+    } catch (e) {}
+  }
+
+  res.json({ success: true, message: 'Logged out successfully' });
+});
+
+// 4. GET History from Neon DB
 app.get('/api/history', async (req, res) => {
   if (!sql || !isDbConnected) {
     return res.status(503).json({ error: 'Database not connected' });
@@ -231,7 +354,7 @@ app.get('/api/history', async (req, res) => {
       SELECT id, timestamp, action, prev_value AS "prevValue", new_value AS "newValue", difference, source
       FROM counter_history 
       ORDER BY timestamp DESC 
-      LIMIT 100
+      LIMIT 150
     `;
     res.json(rows);
   } catch (err) {
@@ -239,32 +362,51 @@ app.get('/api/history', async (req, res) => {
   }
 });
 
-// UPDATE Count & Record History in Neon DB
+// 5. UPDATE Count & Record History in Neon DB (Role-Enforced)
 app.post('/api/count', async (req, res) => {
   if (!sql || !isDbConnected) {
     return res.status(503).json({ error: 'Database not connected' });
   }
-  const { newValue, action, source } = req.body;
+  const { newValue, action } = req.body;
   if (typeof newValue !== 'number') {
     return res.status(400).json({ error: 'newValue must be a number' });
   }
 
+  const isAdmin = await isValidAdminSession(req);
+  const role = isAdmin ? 'Admin' : 'User';
+  const rawAction = String(action || 'modify').toLowerCase();
+
+  // SECURITY ENFORCEMENT: Normal users can NEVER reset the counter to zero
+  if ((rawAction === 'reset' || (newValue === 0 && rawAction === 'reset')) && !isAdmin) {
+    return res.status(403).json({ 
+      error: 'Forbidden: Standard users do not have permission to reset the counter.' 
+    });
+  }
+
   try {
-    // 1. Get current count
+    // 1. Get current count & maintenance mode
     const currentRows = await sql`SELECT count, maintenance_mode FROM counter_state WHERE id = 1 FOR UPDATE`;
     const prevValue = currentRows[0]?.count ?? 0;
     const maintenanceMode = currentRows[0]?.maintenance_mode ?? false;
 
-    // Check maintenance restriction if source is not Admin
-    if (maintenanceMode && source !== 'Admin') {
-      return res.status(403).json({ error: 'System is in maintenance mode. Only Admin can modify count.' });
+    // SECURITY ENFORCEMENT: In maintenance mode, only Admin can update count
+    if (maintenanceMode && !isAdmin) {
+      return res.status(403).json({ 
+        error: 'System is currently under maintenance. Counter updates are temporarily disabled.' 
+      });
     }
 
     const difference = newValue - prevValue;
     const id = 'hist_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
     const now = new Date();
 
-    // 2. Update state & insert history
+    // Standardize transaction action names
+    let cleanAction = 'Manual Edit';
+    if (rawAction === 'increment') cleanAction = 'Increment';
+    else if (rawAction === 'decrement') cleanAction = 'Decrement';
+    else if (rawAction === 'reset') cleanAction = 'Reset';
+
+    // 2. Update state & insert history atomically
     await sql`
       UPDATE counter_state 
       SET count = ${newValue}, updated_at = ${now} 
@@ -273,7 +415,7 @@ app.post('/api/count', async (req, res) => {
 
     await sql`
       INSERT INTO counter_history (id, timestamp, action, prev_value, new_value, difference, source)
-      VALUES (${id}, ${now}, ${action || 'modify'}, ${prevValue}, ${newValue}, ${difference}, ${source || 'User'})
+      VALUES (${id}, ${now}, ${cleanAction}, ${prevValue}, ${newValue}, ${difference}, ${role})
     `;
 
     res.json({
@@ -282,11 +424,11 @@ app.post('/api/count', async (req, res) => {
       record: {
         id,
         timestamp: now.toISOString(),
-        action: action || 'modify',
+        action: cleanAction,
         prevValue,
         newValue,
         difference,
-        source: source || 'User'
+        source: role
       }
     });
   } catch (err) {
@@ -294,11 +436,16 @@ app.post('/api/count', async (req, res) => {
   }
 });
 
-// UPDATE Settings in Neon DB
+// 6. UPDATE Settings in Neon DB (Admin Only)
 app.post('/api/settings', async (req, res) => {
   if (!sql || !isDbConnected) {
     return res.status(503).json({ error: 'Database not connected' });
   }
+  const isAdmin = await isValidAdminSession(req);
+  if (!isAdmin) {
+    return res.status(403).json({ error: 'Unauthorized: Only Admin can modify settings' });
+  }
+
   const { maintenanceMode, step, allowNegative } = req.body;
   try {
     const currentRows = await sql`SELECT maintenance_mode, step, allow_negative FROM counter_state WHERE id = 1`;
@@ -317,6 +464,18 @@ app.post('/api/settings', async (req, res) => {
         updated_at = NOW()
       WHERE id = 1
     `;
+
+    // Audit maintenance mode toggles
+    if (nextMaintenance !== current.maintenance_mode) {
+      const details = nextMaintenance 
+        ? 'System Maintenance Mode enabled (User controls locked)' 
+        : 'System Maintenance Mode disabled (User controls restored)';
+      await sql`
+        INSERT INTO admin_audit_log (id, timestamp, action, details, performed_by)
+        VALUES (${'audit_' + Date.now()}, NOW(), 'MAINTENANCE_TOGGLE', ${details}, 'Admin')
+      `;
+    }
+
     res.json({ 
       success: true, 
       maintenanceMode: nextMaintenance, 
@@ -328,14 +487,91 @@ app.post('/api/settings', async (req, res) => {
   }
 });
 
-// CLEAR History in Neon DB (Admin)
+// 7. PURGE History Logs in Neon DB (Admin Only, Audit Preserved)
 app.delete('/api/history', async (req, res) => {
   if (!sql || !isDbConnected) {
     return res.status(503).json({ error: 'Database not connected' });
   }
+  const isAdmin = await isValidAdminSession(req);
+  if (!isAdmin) {
+    return res.status(403).json({ error: 'Unauthorized: Only Admin can purge history logs' });
+  }
+
   try {
     await sql`TRUNCATE TABLE counter_history`;
-    res.json({ success: true, message: 'History cleared' });
+    // Record action in protected audit log (survives transaction history purge)
+    await sql`
+      INSERT INTO admin_audit_log (id, timestamp, action, details, performed_by)
+      VALUES (${'audit_' + Date.now()}, NOW(), 'PURGE_HISTORY', 'Permanently cleared all counter transaction history logs', 'Admin')
+    `;
+    res.json({ success: true, message: 'Transaction history purged successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 8. FACTORY RESET (Admin Only, Restores Defaults, Audit Preserved)
+app.post('/api/admin/factory-reset', async (req, res) => {
+  if (!sql || !isDbConnected) {
+    return res.status(503).json({ error: 'Database not connected' });
+  }
+  const isAdmin = await isValidAdminSession(req);
+  if (!isAdmin) {
+    return res.status(403).json({ error: 'Unauthorized: Only Admin can perform a factory reset' });
+  }
+
+  try {
+    // 1. Reset state to original defaults
+    await sql`
+      UPDATE counter_state 
+      SET 
+        count = 0, 
+        maintenance_mode = FALSE, 
+        step = 1, 
+        allow_negative = TRUE, 
+        updated_at = NOW() 
+      WHERE id = 1
+    `;
+
+    // 2. Clear transaction history
+    await sql`TRUNCATE TABLE counter_history`;
+
+    // 3. Record factory reset in protected audit log
+    await sql`
+      INSERT INTO admin_audit_log (id, timestamp, action, details, performed_by)
+      VALUES (${'audit_' + Date.now()}, NOW(), 'FACTORY_RESET', 'Factory reset executed: counter reset to 0, history cleared, maintenance mode turned off, default step restored', 'Admin')
+    `;
+
+    res.json({ 
+      success: true, 
+      message: 'System successfully restored to factory defaults',
+      count: 0,
+      maintenanceMode: false,
+      step: 1,
+      allowNegative: true
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 9. Protected Admin Audit Logs (Admin Only)
+app.get('/api/admin/audit-logs', async (req, res) => {
+  if (!sql || !isDbConnected) {
+    return res.status(503).json({ error: 'Database not connected' });
+  }
+  const isAdmin = await isValidAdminSession(req);
+  if (!isAdmin) {
+    return res.status(403).json({ error: 'Unauthorized: Admin authentication required' });
+  }
+  try {
+    const rows = await sql`
+      SELECT id, timestamp, action, details, performed_by AS "performedBy"
+      FROM admin_audit_log 
+      ORDER BY timestamp DESC 
+      LIMIT 50
+    `;
+    res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

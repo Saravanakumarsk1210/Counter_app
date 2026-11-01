@@ -11,6 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="icon" type="image/png" href="/logo.png" />
   <link rel="apple-touch-icon" href="/icon-192.png" />
+  
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -58,16 +59,65 @@
       background: #cbd5e1;
       border-radius: 8px;
     }
+
+    /* ------------------------------------------------------------- */
+    /* DUAL PORTAL THEME STYLING                                    */
+    /* ------------------------------------------------------------- */
+    /* Admin Portal: Orange / White Theme */
+    body.portal-admin {
+      background-color: #f8fafc;
+    }
+    body.portal-admin #appFrame {
+      border-color: #fdba74; /* orange-300 */
+    }
+    body.portal-admin #btnIncrement {
+      background-color: #f97316 !important; /* orange-500 */
+      box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.35) !important;
+    }
+    body.portal-admin #btnIncrement:hover {
+      background-color: #ea580c !important; /* orange-600 */
+    }
+    body.portal-admin #btnIncrement:active {
+      background-color: #c2410c !important; /* orange-700 */
+    }
+    body.portal-admin #countInput:focus {
+      border-color: #f97316 !important;
+    }
+    body.portal-admin #editHintPill {
+      color: #ea580c !important;
+      border-color: #fdba74 !important;
+    }
+    body.portal-admin #historyBadge {
+      background-color: #f97316 !important;
+    }
+    body.portal-admin #inlineHistoryBadge {
+      background-color: #ffedd5 !important;
+      color: #c2410c !important;
+    }
+    body.portal-admin #btnViewAllHistoryInline {
+      color: #ea580c !important;
+    }
+    body.portal-admin #btnQuickReset:hover {
+      background-color: #ffedd5 !important;
+      color: #c2410c !important;
+    }
+
+    /* User Portal: Purple / Indigo Theme (Default) */
+    body.portal-user #btnIncrement {
+      background-color: #4f46e5;
+    }
   </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 antialiased flex flex-col items-center justify-start sm:justify-center p-3 sm:p-6 font-sans selection:bg-indigo-100 selection:text-indigo-700">
+<body class="portal-user bg-slate-100 min-h-screen text-slate-800 antialiased flex flex-col items-center justify-start sm:justify-center p-3 sm:p-6 font-sans selection:bg-indigo-100 selection:text-indigo-700 transition-colors duration-300">
 
   <!-- Mobile App Frame Container -->
-  <div class="w-full max-w-md bg-white rounded-3xl shadow-xl border border-slate-200/80 overflow-hidden flex flex-col relative transition-all duration-300">
+  <div id="appFrame" class="w-full max-w-md bg-white rounded-3xl shadow-xl border border-slate-200/80 overflow-hidden flex flex-col relative transition-all duration-300">
     
     <!-- Top Header Bar -->
     <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-white/90 backdrop-blur sticky top-0 z-10">
-      <div class="flex items-center space-x-2.5">
+      
+      <!-- Application Logo & Title (Click 3 Times to Open Admin Verification) -->
+      <div id="brandHeader" class="flex items-center space-x-2.5 cursor-pointer no-select group transition-transform active:scale-95" title="Saravana Stores (Triple-click for Admin Access)">
         <div class="w-10 h-10 rounded-2xl overflow-hidden bg-white border border-slate-200/90 shadow-sm flex items-center justify-center shrink-0 p-0.5">
           <img src="/logo.png" alt="Saravana Stores" class="w-full h-full object-contain rounded-xl" onerror="this.onerror=null;this.src='/Saravana%20Stores.png';" />
         </div>
@@ -79,7 +129,7 @@
         </div>
       </div>
 
-      <!-- Right Header Actions (History + Admin + Install) -->
+      <!-- Right Header Actions (History + Install + Admin Settings) -->
       <div class="flex items-center space-x-2">
         <!-- Install App Button (Auto-shows when PWA install is ready) -->
         <button 
@@ -108,23 +158,22 @@
           <span id="historyBadge" class="bg-indigo-600 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">0</span>
         </button>
 
-        <!-- Admin Icon Button -->
+        <!-- Settings Icon Button (ADMIN ONLY - HIDDEN IN USER PORTAL) -->
         <button 
-          id="btnOpenAdmin" 
+          id="btnOpenSettings" 
           type="button" 
-          class="relative p-2 rounded-xl bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-800 active:scale-95 transition-all no-select"
-          title="Admin & Maintenance Mode"
+          class="hidden relative p-2 rounded-xl bg-orange-100 hover:bg-orange-200 text-orange-800 active:scale-95 transition-all no-select border border-orange-200 shadow-xs"
+          title="Admin Settings & System Maintenance"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-orange-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
-          <span id="adminActiveDot" class="hidden absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-amber-500 ring-2 ring-white"></span>
         </button>
       </div>
     </header>
 
-    <!-- Neon Database Live Sync Status Pill -->
+    <!-- Neon Database Live Sync Status Banner -->
     <div id="dbStatusBanner" class="px-5 py-2 bg-slate-50/90 border-b border-slate-100 flex items-center justify-between text-[11px] font-medium text-slate-500 transition-colors">
       <span class="flex items-center gap-1.5" id="dbStatusText">
         <span class="w-2 h-2 rounded-full bg-slate-400"></span> Standby (Local Mode)
@@ -138,17 +187,22 @@
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
-        <span><strong>Maintenance Active:</strong> Counter edits are restricted to Admin.</span>
+        <span id="maintenanceBannerText">System is currently under maintenance. Counter updates are temporarily disabled.</span>
       </div>
       <span class="text-[10px] bg-black/20 px-2 py-0.5 rounded-md uppercase font-bold tracking-wider">Locked</span>
     </div>
 
-    <!-- Admin Status Banner (shown when logged in as Admin) -->
-    <div id="adminModeBanner" class="hidden bg-indigo-900 text-indigo-100 px-4 py-2 text-xs flex items-center justify-between border-b border-indigo-800">
-      <span class="flex items-center gap-1.5 font-semibold">
-        <span class="w-2 h-2 rounded-full bg-indigo-400 animate-ping"></span> Admin Privileges Active
+    <!-- Admin Status Banner (shown ONLY when authenticated in Admin Portal) -->
+    <div id="adminModeBanner" class="hidden bg-orange-600 text-white px-4 py-2 text-xs flex items-center justify-between shadow-xs border-b border-orange-700 transition-colors">
+      <span class="flex items-center gap-1.5 font-bold tracking-wide">
+        <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> Admin Portal Active
       </span>
-      <button id="btnExitAdmin" class="text-xs text-indigo-200 hover:text-white underline font-semibold">Exit Admin</button>
+      <button id="btnExitAdmin" type="button" class="text-xs bg-black/25 hover:bg-black/40 active:scale-95 px-2.5 py-1 rounded-lg font-bold text-white transition-all flex items-center gap-1">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+        <span>Exit Admin / Logout</span>
+      </button>
     </div>
 
     <!-- MAIN BODY: Counter Viewport -->
@@ -168,7 +222,7 @@
             class="w-full text-center text-6xl sm:text-7xl font-black text-slate-800 bg-slate-50 border-2 border-transparent hover:border-indigo-200 focus:border-indigo-600 focus:bg-white rounded-3xl py-6 transition-all duration-200 outline-none shadow-inner no-select font-mono cursor-pointer focus:cursor-text"
           />
           <!-- Inline Edit Hint Pill -->
-          <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-white px-3 py-0.5 rounded-full text-[10px] font-bold text-indigo-600 border border-slate-200 shadow-xs flex items-center gap-1 pointer-events-none">
+          <div id="editHintPill" class="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-white px-3 py-0.5 rounded-full text-[10px] font-bold text-indigo-600 border border-slate-200 shadow-xs flex items-center gap-1 pointer-events-none transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
             </svg>
@@ -204,7 +258,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
           </svg>
-          <span class="text-xs font-semibold text-indigo-100 mt-1">+<span class="step-label">1</span></span>
+          <span class="text-xs font-semibold text-white/90 mt-1">+<span class="step-label">1</span></span>
         </button>
       </div>
 
@@ -249,14 +303,20 @@
 
     <!-- Bottom Mobile Toolbar -->
     <footer class="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-around text-xs text-slate-500">
-      <button id="btnQuickReset" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-slate-200 text-slate-600 font-semibold active:scale-95 transition-all">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <!-- Reset to 0 (ADMIN ONLY - HIDDEN IN USER PORTAL) -->
+      <button 
+        id="btnQuickReset" 
+        type="button" 
+        class="hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-slate-200 text-slate-700 font-bold active:scale-95 transition-all no-select"
+        title="Reset counter to 0"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.03 8.03 0 01-15.357-2m15.357 2H15" />
         </svg>
-        Reset to 0
+        <span>Reset to 0</span>
       </button>
 
-      <span class="h-4 w-px bg-slate-200"></span>
+      <span id="footerDivider1" class="hidden h-4 w-px bg-slate-200"></span>
 
       <!-- Sound FX Toggle Button -->
       <button id="btnToggleSound" type="button" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-200 text-slate-600 font-semibold active:scale-95 transition-all no-select" title="Toggle audio clicks">
@@ -290,7 +350,7 @@
               <p class="text-[11px] text-slate-500">Detailed records with date & timestamp</p>
             </div>
           </div>
-          <button id="btnCloseHistory" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors">
+          <button id="btnCloseHistory" type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -299,17 +359,18 @@
 
         <!-- History Records List -->
         <div id="historyListContainer" class="p-4 overflow-y-auto max-h-[50vh] space-y-2.5 custom-scroll flex-1">
-          <!-- Dynamically populated or empty state -->
+          <!-- Dynamically populated -->
         </div>
 
         <!-- History Footer Actions -->
         <div class="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
           <span id="historyTotalCount" class="text-slate-500 font-medium">0 entries recorded</span>
           <div class="flex items-center space-x-2">
-            <button id="btnExportHistory" class="px-3 py-1.5 font-semibold text-slate-600 hover:bg-slate-200 rounded-lg transition-colors">
+            <button id="btnExportHistory" type="button" class="px-3 py-1.5 font-semibold text-slate-600 hover:bg-slate-200 rounded-lg transition-colors">
               Export CSV
             </button>
-            <button id="btnClearHistory" class="px-3 py-1.5 font-semibold text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
+            <!-- Clear History is ADMIN ONLY -->
+            <button id="btnClearHistory" type="button" class="hidden px-3 py-1.5 font-semibold text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
               Clear All
             </button>
           </div>
@@ -318,150 +379,158 @@
     </div>
 
     <!-- ======================================================== -->
-    <!-- MODAL 2: ADMIN & MAINTENANCE MODAL                      -->
+    <!-- MODAL 2: ADMIN ACCESS VERIFICATION (SECRET TRIPLE CLICK) -->
     <!-- ======================================================== -->
-    <div id="adminModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center opacity-0 pointer-events-none transition-opacity duration-200">
-      <div class="bg-white w-full max-w-md max-h-[90vh] rounded-t-3xl sm:rounded-3xl flex flex-col overflow-hidden shadow-2xl transform translate-y-8 sm:translate-y-0 transition-transform duration-300">
+    <div id="adminAuthModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
+      <div class="bg-white w-full max-w-sm rounded-3xl flex flex-col overflow-hidden shadow-2xl transform scale-95 transition-transform duration-200 border border-slate-200">
         
-        <!-- Admin Modal Header -->
         <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white">
           <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <div class="w-8 h-8 rounded-xl bg-orange-500 text-white flex items-center justify-center font-bold">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
             </div>
             <div>
-              <h2 class="text-sm font-bold">Admin Management & Maintenance</h2>
-              <p class="text-[10px] text-slate-300">System controls & counter maintenance</p>
+              <h2 class="text-sm font-bold">Admin Access Verification</h2>
+              <p class="text-[10px] text-slate-400">Restricted administrative portal</p>
             </div>
           </div>
-          <button id="btnCloseAdmin" class="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-colors">
+          <button id="btnCloseAdminAuth" type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        <!-- Admin Content Body -->
-        <div class="p-5 overflow-y-auto max-h-[65vh] space-y-5 custom-scroll flex-1 text-slate-700">
-          
-          <!-- Authentication Section (PIN Gate) -->
-          <div id="adminAuthBox" class="p-4 rounded-2xl bg-amber-50/60 border border-amber-200">
-            <h3 class="text-xs font-bold text-amber-900 uppercase tracking-wider mb-1">Admin Access Verification</h3>
-            <p class="text-xs text-amber-700 mb-3">Enter the 4-digit maintenance passkey</p>
-            <div class="flex items-center gap-2">
-              <input 
-                type="password" 
-                id="adminPinInput" 
-                placeholder="PIN" 
-                maxlength="8" 
-                class="w-32 px-3 py-2 border border-amber-300 rounded-xl text-center text-sm font-mono tracking-widest outline-none focus:ring-2 focus:ring-amber-500 bg-white"
-              />
-              <button 
-                id="btnVerifyPin" 
-                type="button" 
-                class="px-4 py-2 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white text-xs font-bold rounded-xl transition-all shadow-sm"
-              >
-                Authenticate
-              </button>
+        <form id="adminAuthForm" class="p-5 flex flex-col gap-3">
+          <p class="text-xs text-slate-600">Enter the administrator credentials to unlock the Admin Portal.</p>
+          <div class="relative">
+            <input 
+              type="password" 
+              id="adminPasskeyInput" 
+              placeholder="Administrator Passkey" 
+              maxlength="20" 
+              autocomplete="current-password"
+              class="w-full px-4 py-3 border border-slate-300 rounded-2xl text-center text-base font-mono tracking-widest outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all bg-slate-50"
+            />
+          </div>
+          <p id="adminAuthError" class="text-xs text-rose-600 font-semibold hidden"></p>
+
+          <button 
+            type="submit" 
+            id="btnSubmitAdminAuth" 
+            class="w-full py-3 bg-orange-500 hover:bg-orange-600 active:scale-95 text-white text-xs font-extrabold rounded-2xl transition-all shadow-md shadow-orange-200 mt-1"
+          >
+            Authenticate & Access Admin Portal
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MODAL 3: ADMIN SETTINGS & SYSTEM MAINTENANCE             -->
+    <!-- ======================================================== -->
+    <div id="adminSettingsModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center opacity-0 pointer-events-none transition-opacity duration-200">
+      <div class="bg-white w-full max-w-md max-h-[90vh] rounded-t-3xl sm:rounded-3xl flex flex-col overflow-hidden shadow-2xl transform translate-y-8 sm:translate-y-0 transition-transform duration-300">
+        
+        <!-- Modal Header -->
+        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-orange-500 text-white flex items-center justify-center font-bold">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
             </div>
-            <p id="pinErrorMsg" class="text-xs text-rose-600 font-semibold mt-1 hidden"></p>
+            <div>
+              <h2 class="text-sm font-bold">Admin Settings & System Maintenance</h2>
+              <p class="text-[10px] text-slate-300">Exclusive administrator controls</p>
+            </div>
+          </div>
+          <button id="btnCloseSettingsModal" type="button" class="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Settings Body -->
+        <div class="p-5 overflow-y-auto max-h-[70vh] space-y-4 custom-scroll flex-1 text-slate-700">
+          
+          <!-- Section A: System Maintenance Mode -->
+          <div class="p-4 rounded-2xl bg-orange-50/60 border border-orange-200 flex items-center justify-between">
+            <div class="pr-3">
+              <h4 class="text-sm font-bold text-orange-950 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-orange-500"></span> System Maintenance Mode
+              </h4>
+              <p class="text-xs text-orange-800/80 mt-0.5">Locks standard user buttons and edits. Only Admin can update.</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input type="checkbox" id="maintenanceToggle" class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+            </label>
           </div>
 
-          <!-- Admin Panel (Unlocked when authenticated) -->
-          <div id="adminControlsArea" class="hidden space-y-5">
+          <!-- Section: Parameters -->
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Counter Parameters</h4>
             
-            <!-- Maintenance Toggle Switch -->
-            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-              <div>
-                <h4 class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-amber-500"></span> System Maintenance Mode
-                </h4>
-                <p class="text-xs text-slate-500 mt-0.5">Locks standard user buttons & edits. Only Admin can update.</p>
-              </div>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="maintenanceToggle" class="sr-only peer">
-                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
-              </label>
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-medium text-slate-600">Step Increment / Decrement:</span>
+              <select id="settingStepSelect" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1 font-semibold text-slate-700 outline-none">
+                <option value="1">1</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
             </div>
 
-            <!-- Admin Same Scenario: Quick Count Adjustment & Override -->
-            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-              <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">Admin Counter Controls</h4>
-              <p class="text-xs text-slate-500 mb-3">Adjust or force-set the count directly with administrative audit.</p>
-              
-              <div class="flex items-center gap-2 mb-3">
-                <button id="adminBtnDec" class="w-12 h-10 rounded-xl bg-white border border-slate-300 font-bold text-rose-600 hover:bg-rose-50 active:scale-95">-1</button>
-                <input 
-                  type="number" 
-                  id="adminDirectInput" 
-                  class="flex-1 h-10 px-3 text-center font-mono font-bold text-lg border border-slate-300 rounded-xl outline-none focus:border-indigo-600 bg-white"
-                  placeholder="Set value"
-                />
-                <button id="adminBtnInc" class="w-12 h-10 rounded-xl bg-white border border-slate-300 font-bold text-indigo-600 hover:bg-indigo-50 active:scale-95">+1</button>
-              </div>
-
-              <div class="grid grid-cols-2 gap-2">
-                <button id="btnAdminForceSet" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-xs font-bold transition-all">
-                  Apply Value
-                </button>
-                <button id="btnAdminResetZero" class="w-full py-2 bg-slate-200 hover:bg-slate-300 active:scale-95 text-slate-700 rounded-xl text-xs font-bold transition-all">
-                  Force Reset (0)
-                </button>
-              </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-medium text-slate-600">Allow Negative Numbers:</span>
+              <input type="checkbox" id="settingAllowNegative" checked class="w-4 h-4 rounded text-orange-600 focus:ring-0 cursor-pointer">
             </div>
+          </div>
 
-            <!-- Maintenance Settings: Step & Limits -->
-            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-              <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Maintenance Parameters</h4>
-              
-              <div class="flex items-center justify-between text-xs">
-                <span class="font-medium text-slate-600">Step Increment / Decrement:</span>
-                <select id="settingStepSelect" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1 font-semibold text-slate-700 outline-none">
-                  <option value="1">1</option>
-                  <option value="5">5</option>
-                  <option value="10">10</option>
-                  <option value="50">50</option>
-                  <option value="100">100</option>
-                </select>
-              </div>
-
-              <div class="flex items-center justify-between text-xs">
-                <span class="font-medium text-slate-600">Allow Negative Numbers:</span>
-                <input type="checkbox" id="settingAllowNegative" checked class="w-4 h-4 rounded text-indigo-600 focus:ring-0 cursor-pointer">
-              </div>
+          <!-- Section B: Maintenance Cleanup -->
+          <div class="p-4 rounded-2xl border border-rose-200 bg-rose-50/50 space-y-2">
+            <h4 class="text-xs font-bold text-rose-900 uppercase tracking-wider">Maintenance Cleanup</h4>
+            <p class="text-xs text-rose-700">Purge logs or restore default counter state.</p>
+            <div class="pt-1">
+              <button id="btnPurgeHistoryLogs" type="button" class="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold active:scale-95 transition-all shadow-sm">
+                Purge History Logs
+              </button>
             </div>
+          </div>
 
-            <!-- Danger Zone / Data Reset -->
-            <div class="p-4 rounded-2xl border border-rose-200 bg-rose-50/50 space-y-2">
-              <h4 class="text-xs font-bold text-rose-800 uppercase tracking-wider">Maintenance Cleanup</h4>
-              <p class="text-[11px] text-rose-600">Purge logs or restore default counter state.</p>
-              <div class="flex gap-2 pt-1">
-                <button id="btnAdminWipeHistory" class="flex-1 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold active:scale-95 transition-all">
-                  Purge History Logs
-                </button>
-                <button id="btnAdminResetAll" class="flex-1 py-2 bg-white border border-rose-300 text-rose-700 hover:bg-rose-100 rounded-xl text-xs font-bold active:scale-95 transition-all">
-                  Factory Reset
-                </button>
-              </div>
+          <!-- Section C: Factory Reset -->
+          <div class="p-4 rounded-2xl border border-red-300 bg-red-50/80 space-y-2">
+            <h4 class="text-xs font-bold text-red-900 uppercase tracking-wider">Factory Reset</h4>
+            <p class="text-xs text-red-700">Restores counter to 0, clears history, turns off maintenance, and restores defaults. This operation cannot be undone.</p>
+            <div class="pt-1">
+              <button id="btnFactoryReset" type="button" class="w-full py-2.5 bg-white border-2 border-red-500 text-red-700 hover:bg-red-100 rounded-xl text-xs font-bold active:scale-95 transition-all shadow-sm">
+                Perform Factory Reset
+              </button>
             </div>
-
           </div>
 
         </div>
 
-        <!-- Admin Modal Footer -->
+        <!-- Settings Footer with Logout Option -->
         <div class="p-3 bg-slate-100 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
-          <span>Status: <strong id="adminStatusText" class="text-slate-700">Not Authenticated</strong></span>
-          <button id="btnLockAdmin" class="text-indigo-600 hover:text-indigo-800 font-semibold hidden">Lock Session</button>
+          <span class="font-semibold text-slate-700 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-orange-500"></span> Admin Session Active
+          </span>
+          <button id="btnLogoutFromSettings" type="button" class="px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold active:scale-95 transition-all">
+            Exit Admin / Logout
+          </button>
         </div>
 
       </div>
     </div>
 
-    <!-- Notification Toast (mobile-friendly toast notification) -->
+    <!-- Notification Toast -->
     <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-slate-900/95 text-white px-4 py-2.5 rounded-2xl shadow-xl text-xs font-medium flex items-center gap-2 pointer-events-none opacity-0 transition-opacity duration-300 z-50">
       <span id="toastIcon">✨</span>
       <span id="toastMsg">Action recorded</span>
@@ -472,19 +541,20 @@
   <!-- JavaScript Logic -->
   <script>
     // -------------------------------------------------------------
-    // STATE MANAGEMENT & LOCAL STORAGE INITIALIZATION
+    // STATE MANAGEMENT & DUAL PORTAL ARCHITECTURE
     // -------------------------------------------------------------
     const STORAGE_KEY_COUNT = 'smart_counter_value';
     const STORAGE_KEY_HISTORY = 'smart_counter_history';
     const STORAGE_KEY_SETTINGS = 'smart_counter_settings';
+    const STORAGE_KEY_ADMIN_TOKEN = 'smart_counter_admin_token';
 
-    // Application state
     let state = {
       count: parseInt(localStorage.getItem(STORAGE_KEY_COUNT) || '0', 10),
       step: 1,
       allowNegative: true,
       maintenanceMode: false,
-      isAdminAuthenticated: false,
+      currentPortal: 'user', // 'user' (Purple) | 'admin' (Orange)
+      adminToken: localStorage.getItem(STORAGE_KEY_ADMIN_TOKEN) || null,
       history: JSON.parse(localStorage.getItem(STORAGE_KEY_HISTORY) || '[]')
     };
 
@@ -501,26 +571,26 @@
       }
     }
 
-    // Admin maintenance pin
-    const ADMIN_PIN = "1968";
-
     // -------------------------------------------------------------
     // DOM ELEMENT REFERENCES
     // -------------------------------------------------------------
-    // DOM References
     const dbStatusText = document.getElementById('dbStatusText');
     const dbModeBadge = document.getElementById('dbModeBadge');
     let dbOnline = false;
 
+    const brandHeader = document.getElementById('brandHeader');
+    const roleIndicator = document.getElementById('roleIndicator');
     const countInput = document.getElementById('countInput');
+    const editHintPill = document.getElementById('editHintPill');
     const btnIncrement = document.getElementById('btnIncrement');
     const btnDecrement = document.getElementById('btnDecrement');
     const btnQuickReset = document.getElementById('btnQuickReset');
+    const footerDivider1 = document.getElementById('footerDivider1');
     const lastUpdatedLabel = document.getElementById('lastUpdatedLabel');
-    const roleIndicator = document.getElementById('roleIndicator');
     const maintenanceBanner = document.getElementById('maintenanceBanner');
+    const maintenanceBannerText = document.getElementById('maintenanceBannerText');
     const adminModeBanner = document.getElementById('adminModeBanner');
-    const adminActiveDot = document.getElementById('adminActiveDot');
+    const btnExitAdmin = document.getElementById('btnExitAdmin');
     const stepLabels = document.querySelectorAll('.step-label');
 
     // Modals
@@ -533,35 +603,30 @@
     const btnClearHistory = document.getElementById('btnClearHistory');
     const btnExportHistory = document.getElementById('btnExportHistory');
 
-    // Inline Recent History (down on main screen)
+    // Inline Recent History
     const recentHistoryContainer = document.getElementById('recentHistoryContainer');
     const inlineHistoryBadge = document.getElementById('inlineHistoryBadge');
     const btnViewAllHistoryInline = document.getElementById('btnViewAllHistoryInline');
 
-    const btnOpenAdmin = document.getElementById('btnOpenAdmin');
-    const btnCloseAdmin = document.getElementById('btnCloseAdmin');
-    const adminModal = document.getElementById('adminModal');
-    const adminAuthBox = document.getElementById('adminAuthBox');
-    const adminControlsArea = document.getElementById('adminControlsArea');
-    const adminPinInput = document.getElementById('adminPinInput');
-    const btnVerifyPin = document.getElementById('btnVerifyPin');
-    const pinErrorMsg = document.getElementById('pinErrorMsg');
-    const adminStatusText = document.getElementById('adminStatusText');
-    const btnLockAdmin = document.getElementById('btnLockAdmin');
-    const btnExitAdmin = document.getElementById('btnExitAdmin');
+    // Admin Verification Modal
+    const adminAuthModal = document.getElementById('adminAuthModal');
+    const adminAuthForm = document.getElementById('adminAuthForm');
+    const adminPasskeyInput = document.getElementById('adminPasskeyInput');
+    const btnCloseAdminAuth = document.getElementById('btnCloseAdminAuth');
+    const adminAuthError = document.getElementById('adminAuthError');
 
+    // Admin Settings Modal
+    const btnOpenSettings = document.getElementById('btnOpenSettings');
+    const adminSettingsModal = document.getElementById('adminSettingsModal');
+    const btnCloseSettingsModal = document.getElementById('btnCloseSettingsModal');
     const maintenanceToggle = document.getElementById('maintenanceToggle');
-    const adminDirectInput = document.getElementById('adminDirectInput');
-    const adminBtnDec = document.getElementById('adminBtnDec');
-    const adminBtnInc = document.getElementById('adminBtnInc');
-    const btnAdminForceSet = document.getElementById('btnAdminForceSet');
-    const btnAdminResetZero = document.getElementById('btnAdminResetZero');
     const settingStepSelect = document.getElementById('settingStepSelect');
     const settingAllowNegative = document.getElementById('settingAllowNegative');
-    const btnAdminWipeHistory = document.getElementById('btnAdminWipeHistory');
-    const btnAdminResetAll = document.getElementById('btnAdminResetAll');
-    const editFeedback = document.getElementById('editFeedback');
+    const btnPurgeHistoryLogs = document.getElementById('btnPurgeHistoryLogs');
+    const btnFactoryReset = document.getElementById('btnFactoryReset');
+    const btnLogoutFromSettings = document.getElementById('btnLogoutFromSettings');
 
+    const editFeedback = document.getElementById('editFeedback');
     const toast = document.getElementById('toast');
     const toastIcon = document.getElementById('toastIcon');
     const toastMsg = document.getElementById('toastMsg');
@@ -596,7 +661,7 @@
       } catch (e) {}
     }, { once: true, passive: true });
 
-    // Play POSITIVE Sound on Increment (+) — Upward triumphant major chime (D5 -> D6)
+    // Positive Sound on Increment (+) — Upward triumphant chime
     function playIncrementSound() {
       if (!soundEnabled) return;
       try {
@@ -604,7 +669,6 @@
         if (!ctx) return;
         const now = ctx.currentTime;
 
-        // Tone 1: 587Hz (D5) - warm bell base
         const osc1 = ctx.createOscillator();
         const gain1 = ctx.createGain();
         osc1.type = 'sine';
@@ -619,7 +683,6 @@
         osc1.start(now);
         osc1.stop(now + 0.1);
 
-        // Tone 2: 1174Hz (D6) - bright positive chime
         const osc2 = ctx.createOscillator();
         const gain2 = ctx.createGain();
         osc2.type = 'triangle';
@@ -639,7 +702,7 @@
       } catch (err) {}
     }
 
-    // Play NEGATIVE Sound on Decrement (−) — Descending minor deduction buzz/drop
+    // Negative Sound on Decrement (−) — Descending minor deduction drop
     function playDecrementSound() {
       if (!soundEnabled) return;
       try {
@@ -651,7 +714,6 @@
         const gain = ctx.createGain();
         const filter = ctx.createBiquadFilter();
 
-        // Sawtooth wave filtered down for distinct "subtracted/negative" acoustic cue
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(360, now);
         osc.frequency.exponentialRampToValueAtTime(140, now + 0.09);
@@ -705,7 +767,7 @@
     // HELPERS: TOAST & DATE FORMATTER
     // -------------------------------------------------------------
     let toastTimeout = null;
-    function showToast(message, icon = '✅') {
+    function showToast(message, icon = '✨') {
       toastMsg.innerText = message;
       toastIcon.innerText = icon;
       toast.classList.remove('opacity-0');
@@ -720,38 +782,91 @@
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       const date = `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
       
-      // Explicit 12-hour time format with AM / PM
       let hours = d.getHours();
       const minutes = String(d.getMinutes()).padStart(2, '0');
       const seconds = String(d.getSeconds()).padStart(2, '0');
       const ampm = hours >= 12 ? 'PM' : 'AM';
       
       hours = hours % 12;
-      hours = hours ? hours : 12; // '0' hour converts to 12
+      hours = hours ? hours : 12;
       const formattedHours = String(hours).padStart(2, '0');
       
       const time = `${formattedHours}:${minutes}:${seconds} ${ampm}`;
       return { date, time };
     }
 
+    function getAuthHeaders() {
+      const headers = { 'Content-Type': 'application/json' };
+      if (state.adminToken) {
+        headers['Authorization'] = 'Bearer ' + state.adminToken;
+      }
+      return headers;
+    }
+
     // -------------------------------------------------------------
-    // HISTORY RECORDING
+    // PORTAL THEME SWITCHER & ROLE PERMISSIONS
     // -------------------------------------------------------------
-    function addHistoryRecord(action, prevVal, newVal, source = 'User') {
+    function applyPortalTheme(portal) {
+      state.currentPortal = portal;
+
+      if (portal === 'admin') {
+        // Orange / White Admin Portal Theme
+        document.body.classList.remove('portal-user');
+        document.body.classList.add('portal-admin');
+
+        // Header role indicator
+        roleIndicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span> Admin Portal';
+        
+        // Show Admin controls
+        btnOpenSettings.classList.remove('hidden');
+        btnQuickReset.classList.remove('hidden');
+        if (footerDivider1) footerDivider1.classList.remove('hidden');
+        adminModeBanner.classList.remove('hidden');
+        btnClearHistory.classList.remove('hidden');
+
+        // Update maintenance banner text for Admin
+        maintenanceBannerText.innerText = 'Maintenance Active: Normal user edits are locked. Admin updates remain enabled.';
+      } else {
+        // Purple / Indigo User Portal Theme (Default)
+        document.body.classList.remove('portal-admin');
+        document.body.classList.add('portal-user');
+
+        // Header role indicator
+        roleIndicator.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Standard Mode';
+
+        // Hide Admin-only controls from standard users
+        btnOpenSettings.classList.add('hidden');
+        btnQuickReset.classList.add('hidden');
+        if (footerDivider1) footerDivider1.classList.add('hidden');
+        adminModeBanner.classList.add('hidden');
+        btnClearHistory.classList.add('hidden');
+
+        // Update maintenance banner text for User
+        maintenanceBannerText.innerText = 'System is currently under maintenance. Counter updates are temporarily disabled.';
+      }
+
+      syncUiState();
+      renderHistory();
+    }
+
+    // -------------------------------------------------------------
+    // HISTORY RECORDING & RENDERING
+    // -------------------------------------------------------------
+    function addHistoryRecord(action, prevVal, newVal, source = (state.currentPortal === 'admin' ? 'Admin' : 'User')) {
       const now = new Date().toISOString();
       const record = {
         id: 'hist_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
         timestamp: now,
-        action: action, // 'increment', 'decrement', 'direct_edit', 'reset', 'admin_override'
+        action: action, // 'Increment', 'Decrement', 'Manual Edit', 'Reset'
         prevValue: prevVal,
         newValue: newVal,
         difference: newVal - prevVal,
         source: source
       };
 
-      state.history.unshift(record); // Add to beginning (newest first)
+      state.history.unshift(record);
       if (state.history.length > 300) {
-        state.history.pop(); // keep maximum 300 records
+        state.history.pop();
       }
 
       saveHistory();
@@ -784,36 +899,39 @@
         return;
       }
 
-      // Display the 3 most recent entries right on the main screen
       const latestItems = state.history.slice(0, 3);
       recentHistoryContainer.innerHTML = latestItems.map(item => {
         const { date, time } = formatDateTime(item.timestamp);
         let badgeColor = 'bg-slate-100 text-slate-700 border-slate-200';
-        let actionLabel = 'Modified';
+        let actionLabel = item.action || 'Modified';
         let diffSign = item.difference > 0 ? `+${item.difference}` : `${item.difference}`;
         let iconSymbol = '•';
 
-        if (item.action === 'increment') {
+        const normAction = (item.action || '').toLowerCase();
+        if (normAction === 'increment') {
           badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
           actionLabel = '+ Inc';
           iconSymbol = '+';
-        } else if (item.action === 'decrement') {
+        } else if (normAction === 'decrement') {
           badgeColor = 'bg-rose-50 text-rose-700 border-rose-200';
           actionLabel = '− Dec';
           iconSymbol = '−';
-        } else if (item.action === 'direct_edit') {
-          badgeColor = 'bg-indigo-50 text-indigo-700 border-indigo-200';
+        } else if (normAction === 'manual edit' || normAction === 'direct_edit') {
+          badgeColor = state.currentPortal === 'admin' 
+            ? 'bg-orange-50 text-orange-700 border-orange-200' 
+            : 'bg-indigo-50 text-indigo-700 border-indigo-200';
           actionLabel = '✏️ Edit';
           iconSymbol = '✎';
-        } else if (item.action === 'reset') {
+        } else if (normAction === 'reset') {
           badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
           actionLabel = '🔄 Reset';
           iconSymbol = '↺';
-        } else if (item.action === 'admin_override') {
-          badgeColor = 'bg-purple-50 text-purple-700 border-purple-200';
-          actionLabel = '🛠️ Admin';
-          iconSymbol = '⚙';
         }
+
+        const isAdmin = item.source === 'Admin';
+        const rolePill = isAdmin
+          ? '<span class="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-orange-100 text-orange-700 border border-orange-200">Admin</span>'
+          : '<span class="text-[9px] font-bold uppercase px-1.5 py-0.2 rounded bg-slate-200 text-slate-700">User</span>';
 
         return `
           <div class="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100/90 border border-slate-200/80 flex items-center justify-between text-xs transition-colors">
@@ -823,8 +941,8 @@
               </span>
               <div class="flex flex-col">
                 <div class="flex items-center gap-1.5">
-                  <span class="font-bold text-slate-700 text-xs">${actionLabel}</span>
-                  ${item.source === 'Admin' ? '<span class="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0.2 rounded">Admin</span>' : ''}
+                  <span class="font-bold text-slate-800 text-xs">${actionLabel}</span>
+                  ${rolePill}
                 </div>
                 <div class="text-[10px] text-slate-400">
                   ${date} at ${time}
@@ -834,7 +952,7 @@
             
             <div class="text-right">
               <div class="font-mono text-xs font-bold text-slate-800">
-                ${item.prevValue} &rarr; <span class="text-indigo-600 font-extrabold text-sm">${item.newValue}</span>
+                ${item.prevValue} &rarr; <span class="${state.currentPortal === 'admin' ? 'text-orange-600' : 'text-indigo-600'} font-extrabold text-sm">${item.newValue}</span>
               </div>
               <div class="text-[10px] font-mono font-semibold ${item.difference >= 0 ? 'text-emerald-600' : 'text-rose-500'}">
                 (${diffSign})
@@ -855,7 +973,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
             <p class="text-xs font-semibold">No records found</p>
-            <p class="text-[11px] text-slate-400">Change values or use + / - to generate history</p>
+            <p class="text-[11px] text-slate-400">Change values or use + / − to generate history</p>
           </div>
         `;
         return;
@@ -864,25 +982,30 @@
       historyListContainer.innerHTML = state.history.map(item => {
         const { date, time } = formatDateTime(item.timestamp);
         let badgeColor = 'bg-slate-100 text-slate-700 border-slate-200';
-        let actionLabel = 'Modified';
+        let actionLabel = item.action || 'Modified';
         let diffSign = item.difference > 0 ? `+${item.difference}` : `${item.difference}`;
 
-        if (item.action === 'increment') {
+        const normAction = (item.action || '').toLowerCase();
+        if (normAction === 'increment') {
           badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
           actionLabel = '+ Increment';
-        } else if (item.action === 'decrement') {
+        } else if (normAction === 'decrement') {
           badgeColor = 'bg-rose-50 text-rose-700 border-rose-200';
-          actionLabel = '- Decrement';
-        } else if (item.action === 'direct_edit') {
-          badgeColor = 'bg-indigo-50 text-indigo-700 border-indigo-200';
-          actionLabel = '✏️ Direct Edit';
-        } else if (item.action === 'reset') {
+          actionLabel = '− Decrement';
+        } else if (normAction === 'manual edit' || normAction === 'direct_edit') {
+          badgeColor = state.currentPortal === 'admin' 
+            ? 'bg-orange-50 text-orange-700 border-orange-200' 
+            : 'bg-indigo-50 text-indigo-700 border-indigo-200';
+          actionLabel = '✏️ Manual Edit';
+        } else if (normAction === 'reset') {
           badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
-          actionLabel = '🔄 Reset';
-        } else if (item.action === 'admin_override') {
-          badgeColor = 'bg-purple-50 text-purple-700 border-purple-200';
-          actionLabel = '🛠️ Admin Force';
+          actionLabel = '🔄 Reset to 0';
         }
+
+        const isAdmin = item.source === 'Admin';
+        const rolePill = isAdmin
+          ? '<span class="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 border border-orange-200">Admin</span>'
+          : '<span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">User</span>';
 
         return `
           <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs transition-all hover:bg-slate-100/70">
@@ -891,7 +1014,7 @@
                 <span class="px-2 py-0.5 rounded-md font-bold text-[10px] border ${badgeColor}">
                   ${actionLabel}
                 </span>
-                ${item.source === 'Admin' ? '<span class="text-[10px] font-bold text-amber-600 bg-amber-100 px-1.5 rounded">Admin</span>' : ''}
+                ${rolePill}
               </div>
               <div class="flex items-center gap-1 text-[11px] text-slate-400 mt-1">
                 <span>${date}</span>
@@ -902,7 +1025,7 @@
             
             <div class="text-right">
               <div class="font-mono text-xs font-bold text-slate-800">
-                ${item.prevValue} &rarr; <span class="text-indigo-600 text-sm">${item.newValue}</span>
+                ${item.prevValue} &rarr; <span class="${state.currentPortal === 'admin' ? 'text-orange-600' : 'text-indigo-600'} text-sm font-extrabold">${item.newValue}</span>
               </div>
               <div class="text-[10px] font-mono text-slate-400">
                 (${diffSign})
@@ -928,7 +1051,7 @@
     // -------------------------------------------------------------
     // COUNT UPDATES & VALIDATIONS
     // -------------------------------------------------------------
-    async function updateCount(newVal, actionType, source = 'User') {
+    async function updateCount(newVal, actionType) {
       let targetVal = parseInt(newVal, 10);
       if (isNaN(targetVal)) {
         targetVal = 0;
@@ -940,6 +1063,18 @@
         showToast('Negative values are not permitted', '⚠️');
       }
 
+      // Security check: normal user cannot reset to 0
+      if (actionType === 'Reset' && state.currentPortal !== 'admin') {
+        showToast('Only Admin has permission to reset the counter', '🔒');
+        return;
+      }
+
+      // Maintenance mode check: normal users cannot update during maintenance
+      if (state.maintenanceMode && state.currentPortal !== 'admin') {
+        showToast('System is currently under maintenance. Counter updates are temporarily disabled.', '⚠️');
+        return;
+      }
+
       if (state.count === targetVal) {
         countInput.value = state.count;
         return;
@@ -948,34 +1083,33 @@
       const prev = state.count;
       state.count = targetVal;
       countInput.value = state.count;
-      adminDirectInput.value = state.count;
 
       localStorage.setItem(STORAGE_KEY_COUNT, state.count.toString());
-      addHistoryRecord(actionType, prev, state.count, source);
+      addHistoryRecord(actionType, prev, state.count, state.currentPortal === 'admin' ? 'Admin' : 'User');
 
-      // Bounce animation feedback on input
+      // Visual pulse feedback
       countInput.classList.add('scale-105');
       setTimeout(() => countInput.classList.remove('scale-105'), 150);
 
-      // Real-time sync to Neon DB
+      // Real-time Neon DB API call
       try {
         const res = await fetch('/api/count', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           cache: 'no-store',
-          body: JSON.stringify({ newValue: targetVal, action: actionType, source: source })
+          body: JSON.stringify({ newValue: targetVal, action: actionType })
         });
         if (res.ok) {
           performRealtimeSync();
         } else {
           const errData = await res.json();
           if (res.status === 403) {
-            showToast(errData.error || 'System is in maintenance mode', '⚠️');
+            showToast(errData.error || 'Permission denied', '⚠️');
             performRealtimeSync();
           }
         }
       } catch (e) {
-        console.warn('[Neon DB] Could not reach DB backend:', e);
+        console.warn('[Neon DB] Sync notice:', e);
       }
     }
 
@@ -983,48 +1117,32 @@
     // MAINTENANCE & UI PERMISSION STATE
     // -------------------------------------------------------------
     function syncUiState() {
-      // Step label display
       stepLabels.forEach(lbl => lbl.innerText = state.step);
       settingStepSelect.value = state.step.toString();
       settingAllowNegative.checked = state.allowNegative;
       maintenanceToggle.checked = state.maintenanceMode;
 
-      // Maintenance alert handling
       if (state.maintenanceMode) {
         maintenanceBanner.classList.remove('hidden');
       } else {
         maintenanceBanner.classList.add('hidden');
       }
 
-      // Admin indicator
-      if (state.isAdminAuthenticated) {
-        adminModeBanner.classList.remove('hidden');
-        adminActiveDot.classList.remove('hidden');
-        roleIndicator.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Admin Mode';
-      } else {
-        adminModeBanner.classList.add('hidden');
-        adminActiveDot.classList.add('hidden');
-        roleIndicator.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Standard Mode';
-      }
-
-      // If under maintenance and not admin, lock standard user controls
-      const isLocked = state.maintenanceMode && !state.isAdminAuthenticated;
+      // If under maintenance and in User Portal, lock controls
+      const isLocked = state.maintenanceMode && state.currentPortal !== 'admin';
       btnIncrement.disabled = isLocked;
       btnDecrement.disabled = isLocked;
-      btnQuickReset.disabled = isLocked;
 
       if (isLocked) {
         countInput.readOnly = true;
         countInput.classList.add('opacity-75', 'cursor-not-allowed');
         editFeedback.innerText = 'Under maintenance (Edits disabled)';
-        editFeedback.classList.remove('text-slate-400');
-        editFeedback.classList.add('text-amber-600', 'font-bold');
+        editFeedback.className = 'text-xs h-5 mt-4 text-amber-600 font-bold transition-opacity';
       } else {
         countInput.readOnly = false;
         countInput.classList.remove('opacity-75', 'cursor-not-allowed');
         editFeedback.innerText = 'Press Enter or click away to save';
-        editFeedback.classList.remove('text-amber-600', 'font-bold');
-        editFeedback.classList.add('text-slate-400');
+        editFeedback.className = 'text-xs h-5 mt-4 text-slate-400 transition-opacity';
       }
     }
 
@@ -1039,7 +1157,7 @@
 
       fetch('/api/settings', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         cache: 'no-store',
         body: JSON.stringify(payload)
       })
@@ -1048,52 +1166,50 @@
     }
 
     // -------------------------------------------------------------
-    // EVENT LISTENERS: MAIN COUNTER CONTROLS
+    // EVENT LISTENERS: COUNTER CONTROLS
     // -------------------------------------------------------------
     btnIncrement.addEventListener('click', () => {
       playIncrementSound();
-      if (state.maintenanceMode && !state.isAdminAuthenticated) {
-        showToast('System is in maintenance mode', '⚠️');
+      if (state.maintenanceMode && state.currentPortal !== 'admin') {
+        showToast('System is currently under maintenance. Counter updates are temporarily disabled.', '⚠️');
         return;
       }
-      updateCount(state.count + state.step, 'increment', state.isAdminAuthenticated ? 'Admin' : 'User');
+      updateCount(state.count + state.step, 'Increment');
     });
 
     btnDecrement.addEventListener('click', () => {
       playDecrementSound();
-      if (state.maintenanceMode && !state.isAdminAuthenticated) {
-        showToast('System is in maintenance mode', '⚠️');
+      if (state.maintenanceMode && state.currentPortal !== 'admin') {
+        showToast('System is currently under maintenance. Counter updates are temporarily disabled.', '⚠️');
         return;
       }
-      updateCount(state.count - state.step, 'decrement', state.isAdminAuthenticated ? 'Admin' : 'User');
+      updateCount(state.count - state.step, 'Decrement');
     });
 
+    // Reset to 0 (Admin Portal Only)
     btnQuickReset.addEventListener('click', () => {
-      if (state.maintenanceMode && !state.isAdminAuthenticated) {
-        showToast('System is in maintenance mode', '⚠️');
+      if (state.currentPortal !== 'admin') {
+        showToast('Only Admin has permission to reset the counter', '🔒');
         return;
       }
-      if (confirm('Reset the counter to 0?')) {
-        updateCount(0, 'reset', state.isAdminAuthenticated ? 'Admin' : 'User');
+      if (confirm('Reset the counter value to 0?')) {
+        updateCount(0, 'Reset');
         showToast('Counter reset to 0', '🔄');
       }
     });
 
-    // -------------------------------------------------------------
-    // EVENT LISTENERS: DIRECT EDIT ON TEXT FIELD
-    // -------------------------------------------------------------
+    // Direct Edit
     let previousFocusedValue = 0;
-
     countInput.addEventListener('focus', () => {
       isUserEditing = true;
       previousFocusedValue = state.count;
       editFeedback.innerText = 'Editing... Press Enter to confirm';
-      editFeedback.classList.add('text-indigo-600', 'font-semibold');
+      editFeedback.className = `text-xs h-5 mt-4 ${state.currentPortal === 'admin' ? 'text-orange-600' : 'text-indigo-600'} font-semibold transition-opacity`;
     });
 
     countInput.addEventListener('blur', () => {
       isUserEditing = false;
-      if (state.maintenanceMode && !state.isAdminAuthenticated) {
+      if (state.maintenanceMode && state.currentPortal !== 'admin') {
         countInput.value = state.count;
         return;
       }
@@ -1103,16 +1219,16 @@
         return;
       }
       if (parsed !== state.count) {
-        updateCount(parsed, 'direct_edit', state.isAdminAuthenticated ? 'Admin' : 'User');
+        updateCount(parsed, 'Manual Edit');
         showToast(`Value updated to ${parsed}`, '✏️');
       }
       editFeedback.innerText = 'Press Enter or click away to save';
-      editFeedback.classList.remove('text-indigo-600', 'font-semibold');
+      editFeedback.className = 'text-xs h-5 mt-4 text-slate-400 transition-opacity';
     });
 
     countInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
-        countInput.blur(); // Triggers blur listener to save
+        countInput.blur();
       } else if (e.key === 'Escape') {
         countInput.value = previousFocusedValue;
         countInput.blur();
@@ -1120,7 +1236,238 @@
     });
 
     // -------------------------------------------------------------
-    // EVENT LISTENERS: HISTORY MODAL
+    // SECRET TRIPLE-CLICK TRIGGER ON BRAND HEADER
+    // -------------------------------------------------------------
+    let brandClickCount = 0;
+    let brandClickTimer = null;
+
+    brandHeader.addEventListener('click', () => {
+      brandClickCount++;
+      clearTimeout(brandClickTimer);
+
+      if (brandClickCount === 3) {
+        brandClickCount = 0;
+        if (state.currentPortal === 'admin') {
+          showToast('Already in Admin Portal', 'ℹ️');
+        } else {
+          openAdminAuthModal();
+        }
+      } else {
+        brandClickTimer = setTimeout(() => {
+          brandClickCount = 0;
+        }, 800);
+      }
+    });
+
+    // -------------------------------------------------------------
+    // ADMIN AUTHENTICATION MODAL & PERSISTENT SESSION
+    // -------------------------------------------------------------
+    function openAdminAuthModal() {
+      adminAuthError.classList.add('hidden');
+      adminPasskeyInput.value = '';
+      adminAuthModal.classList.remove('pointer-events-none', 'opacity-0');
+      adminAuthModal.querySelector('.max-w-sm').classList.remove('scale-95');
+      adminPasskeyInput.focus();
+    }
+
+    function closeAdminAuthModal() {
+      adminAuthModal.classList.add('pointer-events-none', 'opacity-0');
+      adminAuthModal.querySelector('.max-w-sm').classList.add('scale-95');
+    }
+
+    btnCloseAdminAuth.addEventListener('click', closeAdminAuthModal);
+    adminAuthModal.addEventListener('click', (e) => {
+      if (e.target === adminAuthModal) closeAdminAuthModal();
+    });
+
+    adminAuthForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const passkey = adminPasskeyInput.value.trim();
+      if (!passkey) return;
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ passkey })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.token) {
+          state.adminToken = data.token;
+          localStorage.setItem(STORAGE_KEY_ADMIN_TOKEN, data.token);
+          closeAdminAuthModal();
+          applyPortalTheme('admin');
+          showToast('Admin Portal Activated', '🔓');
+        } else {
+          adminAuthError.innerText = data.error || 'Invalid administrator credentials';
+          adminAuthError.classList.remove('hidden');
+          adminPasskeyInput.classList.add('border-rose-400');
+        }
+      } catch (err) {
+        adminAuthError.innerText = 'Authentication error. Please check connection.';
+        adminAuthError.classList.remove('hidden');
+      }
+    });
+
+    // Check Persistent Admin Session on Startup
+    async function verifyPersistentAdminSession() {
+      const token = localStorage.getItem(STORAGE_KEY_ADMIN_TOKEN);
+      if (!token) {
+        applyPortalTheme('user');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/auth/verify', {
+          headers: { 'Authorization': 'Bearer ' + token },
+          cache: 'no-store'
+        });
+        if (res.ok) {
+          state.adminToken = token;
+          applyPortalTheme('admin');
+        } else {
+          localStorage.removeItem(STORAGE_KEY_ADMIN_TOKEN);
+          state.adminToken = null;
+          applyPortalTheme('user');
+        }
+      } catch (e) {
+        // Retain session if offline
+        state.adminToken = token;
+        applyPortalTheme('admin');
+      }
+    }
+
+    // Logout Functionality
+    async function logoutAdmin() {
+      if (state.adminToken) {
+        try {
+          await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: getAuthHeaders()
+          });
+        } catch (e) {}
+      }
+      localStorage.removeItem(STORAGE_KEY_ADMIN_TOKEN);
+      state.adminToken = null;
+      applyPortalTheme('user');
+      closeSettingsModal();
+      showToast('Exited Admin Portal', '👋');
+    }
+
+    btnExitAdmin.addEventListener('click', logoutAdmin);
+    btnLogoutFromSettings.addEventListener('click', logoutAdmin);
+
+    // -------------------------------------------------------------
+    // ADMIN SETTINGS MODAL & MAINTENANCE CONTROLS
+    // -------------------------------------------------------------
+    function openSettingsModal() {
+      if (state.currentPortal !== 'admin') return;
+      adminSettingsModal.classList.remove('pointer-events-none', 'opacity-0');
+      adminSettingsModal.querySelector('.max-w-md').classList.remove('translate-y-8');
+      maintenanceToggle.checked = state.maintenanceMode;
+      settingStepSelect.value = state.step.toString();
+      settingAllowNegative.checked = state.allowNegative;
+    }
+
+    function closeSettingsModal() {
+      adminSettingsModal.classList.add('pointer-events-none', 'opacity-0');
+      adminSettingsModal.querySelector('.max-w-md').classList.add('translate-y-8');
+    }
+
+    btnOpenSettings.addEventListener('click', openSettingsModal);
+    btnCloseSettingsModal.addEventListener('click', closeSettingsModal);
+    adminSettingsModal.addEventListener('click', (e) => {
+      if (e.target === adminSettingsModal) closeSettingsModal();
+    });
+
+    maintenanceToggle.addEventListener('change', (e) => {
+      state.maintenanceMode = e.target.checked;
+      saveSettings();
+      showToast(state.maintenanceMode ? 'System Maintenance Enabled' : 'System Maintenance Disabled', '🛠️');
+      addHistoryRecord(
+        'Manual Edit', 
+        state.count, 
+        state.count, 
+        state.maintenanceMode ? 'Admin (Enabled Maintenance)' : 'Admin (Disabled Maintenance)'
+      );
+    });
+
+    settingStepSelect.addEventListener('change', (e) => {
+      state.step = parseInt(e.target.value, 10) || 1;
+      saveSettings();
+      showToast(`Step size set to ${state.step}`, '⚙️');
+    });
+
+    settingAllowNegative.addEventListener('change', (e) => {
+      state.allowNegative = e.target.checked;
+      saveSettings();
+      if (!state.allowNegative && state.count < 0) {
+        updateCount(0, 'Reset');
+      }
+    });
+
+    // Purge History Logs (Admin Only, Protected Audit Log Preserved)
+    btnPurgeHistoryLogs.addEventListener('click', async () => {
+      if (confirm('Permanently purge all transaction history logs? Current counter value will not be changed.')) {
+        try {
+          const res = await fetch('/api/history', {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+          });
+          if (res.ok) {
+            state.history = [];
+            saveHistory();
+            renderHistory();
+            showToast('Transaction history purged', '🧹');
+          } else {
+            showToast('Failed to purge history logs', '⚠️');
+          }
+        } catch (e) {
+          showToast('Error purging history logs', '⚠️');
+        }
+      }
+    });
+
+    // Factory Reset (Admin Only, Restores Application to Original Default State)
+    btnFactoryReset.addEventListener('click', async () => {
+      const confirmed = confirm(
+        'WARNING: Factory Reset will reset the counter to 0, permanently clear transaction history, turn off maintenance mode, and restore all default settings.\n\nThis operation cannot be undone. Are you sure you want to proceed?'
+      );
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch('/api/admin/factory-reset', {
+          method: 'POST',
+          headers: getAuthHeaders()
+        });
+        if (res.ok) {
+          state.count = 0;
+          state.step = 1;
+          state.allowNegative = true;
+          state.maintenanceMode = false;
+          state.history = [];
+          
+          localStorage.setItem(STORAGE_KEY_COUNT, '0');
+          localStorage.removeItem(STORAGE_KEY_HISTORY);
+          localStorage.removeItem(STORAGE_KEY_SETTINGS);
+
+          countInput.value = 0;
+          syncUiState();
+          saveHistory();
+          renderHistory();
+          closeSettingsModal();
+          showToast('Factory Reset Complete: Defaults restored', '✨');
+        } else {
+          showToast('Factory reset failed on server', '⚠️');
+        }
+      } catch (err) {
+        showToast('Error executing factory reset', '⚠️');
+      }
+    });
+
+    // -------------------------------------------------------------
+    // HISTORY MODAL CONTROLS
     // -------------------------------------------------------------
     function openHistoryModal() {
       historyModal.classList.remove('pointer-events-none', 'opacity-0');
@@ -1138,21 +1485,18 @@
       btnViewAllHistoryInline.addEventListener('click', openHistoryModal);
     }
     btnCloseHistory.addEventListener('click', closeHistoryModal);
-
     historyModal.addEventListener('click', (e) => {
-      if (e.target === historyModal) {
-        closeHistoryModal();
-      }
+      if (e.target === historyModal) closeHistoryModal();
     });
 
     btnClearHistory.addEventListener('click', () => {
-      if (state.history.length === 0) return;
-      if (confirm('Are you sure you want to delete all stored history entries?')) {
+      if (state.currentPortal !== 'admin') return;
+      if (confirm('Clear all stored history logs?')) {
         state.history = [];
         saveHistory();
         renderHistory();
         if (dbOnline) {
-          fetch('/api/history', { method: 'DELETE' }).catch(err => console.warn('[Neon DB] Wipe error:', err));
+          fetch('/api/history', { method: 'DELETE', headers: getAuthHeaders() }).catch(err => console.warn(err));
         }
         showToast('History logs cleared', '🗑️');
       }
@@ -1163,10 +1507,10 @@
         showToast('No history records to export', 'ℹ️');
         return;
       }
-      let csvContent = "data:text/csv;charset=utf-8,ID,Date,Time,Action,PreviousValue,NewValue,Difference,Source\n";
+      let csvContent = "data:text/csv;charset=utf-8,ID,Date,Time,Role,Action,PreviousValue,NewValue,Difference\n";
       state.history.forEach(item => {
         const { date, time } = formatDateTime(item.timestamp);
-        csvContent += `"${item.id}","${date}","${time}","${item.action}",${item.prevValue},${item.newValue},${item.difference},"${item.source}"\n`;
+        csvContent += `"${item.id}","${date}","${time}","${item.source || 'User'}","${item.action || 'Modify'}",${item.prevValue},${item.newValue},${item.difference}\n`;
       });
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
@@ -1176,176 +1520,6 @@
       link.click();
       document.body.removeChild(link);
       showToast('CSV downloaded', '📥');
-    });
-
-    // -------------------------------------------------------------
-    // EVENT LISTENERS: ADMIN MODAL & MAINTENANCE
-    // -------------------------------------------------------------
-    function openAdminModal() {
-      adminDirectInput.value = state.count;
-      adminModal.classList.remove('pointer-events-none', 'opacity-0');
-      adminModal.querySelector('.max-w-md').classList.remove('translate-y-8');
-      if (state.isAdminAuthenticated) {
-        showAdminUnlockedView();
-      } else {
-        showAdminLockedView();
-      }
-    }
-
-    function closeAdminModal() {
-      adminModal.classList.add('pointer-events-none', 'opacity-0');
-      adminModal.querySelector('.max-w-md').classList.add('translate-y-8');
-    }
-
-    function showAdminUnlockedView() {
-      adminAuthBox.classList.add('hidden');
-      adminControlsArea.classList.remove('hidden');
-      adminStatusText.innerHTML = '<span class="text-emerald-600 font-bold">● Authenticated</span>';
-      btnLockAdmin.classList.remove('hidden');
-    }
-
-    function showAdminLockedView() {
-      adminAuthBox.classList.remove('hidden');
-      adminControlsArea.classList.add('hidden');
-      adminStatusText.innerHTML = '<span class="text-slate-500 font-medium">Locked</span>';
-      btnLockAdmin.classList.add('hidden');
-      adminPinInput.value = '';
-      pinErrorMsg.classList.add('hidden');
-    }
-
-    btnOpenAdmin.addEventListener('click', openAdminModal);
-    btnCloseAdmin.addEventListener('click', closeAdminModal);
-
-    adminModal.addEventListener('click', (e) => {
-      if (e.target === adminModal) {
-        closeAdminModal();
-      }
-    });
-
-    btnVerifyPin.addEventListener('click', () => {
-      const pin = adminPinInput.value.trim();
-      if (pin === ADMIN_PIN) {
-        state.isAdminAuthenticated = true;
-        pinErrorMsg.classList.add('hidden');
-        showAdminUnlockedView();
-        syncUiState();
-        showToast('Admin Mode Unlocked', '🔓');
-      } else {
-        pinErrorMsg.innerText = 'Incorrect PIN. Please try again.';
-        pinErrorMsg.classList.remove('hidden');
-        adminPinInput.classList.add('border-rose-400');
-      }
-    });
-
-    adminPinInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        btnVerifyPin.click();
-      }
-    });
-
-    btnLockAdmin.addEventListener('click', () => {
-      state.isAdminAuthenticated = false;
-      showAdminLockedView();
-      syncUiState();
-      showToast('Admin session locked', '🔒');
-    });
-
-    btnExitAdmin.addEventListener('click', () => {
-      state.isAdminAuthenticated = false;
-      showAdminLockedView();
-      syncUiState();
-      showToast('Exited Admin Mode', '👋');
-    });
-
-    // Admin maintenance toggle
-    maintenanceToggle.addEventListener('change', (e) => {
-      state.maintenanceMode = e.target.checked;
-      saveSettings();
-      showToast(state.maintenanceMode ? 'Maintenance Mode Enabled' : 'Maintenance Mode Disabled', '🛠️');
-      addHistoryRecord(
-        'admin_override', 
-        state.count, 
-        state.count, 
-        state.maintenanceMode ? 'Admin (Enabled Maintenance)' : 'Admin (Disabled Maintenance)'
-      );
-    });
-
-    // Admin Scenario Controls (+, -, direct input)
-    adminBtnDec.addEventListener('click', () => {
-      playDecrementSound();
-      const next = state.count - state.step;
-      updateCount(next, 'decrement', 'Admin');
-    });
-
-    adminBtnInc.addEventListener('click', () => {
-      playIncrementSound();
-      const next = state.count + state.step;
-      updateCount(next, 'increment', 'Admin');
-    });
-
-    btnAdminForceSet.addEventListener('click', () => {
-      const val = parseInt(adminDirectInput.value, 10);
-      if (!isNaN(val)) {
-        updateCount(val, 'admin_override', 'Admin');
-        showToast(`Admin applied count: ${val}`, '🛠️');
-      }
-    });
-
-    btnAdminResetZero.addEventListener('click', () => {
-      updateCount(0, 'admin_override', 'Admin');
-      showToast('Admin forced count to 0', '🛠️');
-    });
-
-    settingStepSelect.addEventListener('change', (e) => {
-      state.step = parseInt(e.target.value, 10) || 1;
-      saveSettings();
-      showToast(`Step size set to ${state.step}`, '⚙️');
-    });
-
-    settingAllowNegative.addEventListener('change', (e) => {
-      state.allowNegative = e.target.checked;
-      saveSettings();
-      if (!state.allowNegative && state.count < 0) {
-        updateCount(0, 'admin_override', 'Admin');
-      }
-    });
-
-    btnAdminWipeHistory.addEventListener('click', () => {
-      if (confirm('Admin: Wipe all history audit trails permanently?')) {
-        state.history = [];
-        saveHistory();
-        renderHistory();
-        if (dbOnline) {
-          fetch('/api/history', { method: 'DELETE' }).catch(err => console.warn('[Neon DB] Wipe error:', err));
-        }
-        showToast('All audit logs wiped', '🧹');
-      }
-    });
-
-    btnAdminResetAll.addEventListener('click', () => {
-      if (confirm('Admin: Restore factory settings and clear all data?')) {
-        localStorage.removeItem(STORAGE_KEY_COUNT);
-        localStorage.removeItem(STORAGE_KEY_HISTORY);
-        localStorage.removeItem(STORAGE_KEY_SETTINGS);
-        state.count = 0;
-        state.step = 1;
-        state.allowNegative = true;
-        state.maintenanceMode = false;
-        state.history = [];
-        countInput.value = 0;
-        saveSettings();
-        saveHistory();
-        renderHistory();
-        if (dbOnline) {
-          fetch('/api/history', { method: 'DELETE' }).catch(err => console.warn('[Neon DB] Reset error:', err));
-          fetch('/api/count', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ newValue: 0, action: 'reset', source: 'Admin' })
-          }).catch(err => console.warn('[Neon DB] Reset count error:', err));
-        }
-        showToast('System reset to factory defaults', '✨');
-      }
     });
 
     // -------------------------------------------------------------
@@ -1380,7 +1554,6 @@
         if (!stateRes.ok) throw new Error('API unreachable');
         const dbState = await stateRes.json();
 
-        // Check if state changed on server (from any mobile or admin)
         const countChanged = dbState.count !== state.count;
         const maintenanceChanged = dbState.maintenanceMode !== state.maintenanceMode;
         const stepChanged = dbState.step !== state.step;
@@ -1392,10 +1565,8 @@
           state.step = dbState.step;
           state.allowNegative = dbState.allowNegative;
 
-          // Only update input if current user isn't actively editing
           if (!isUserEditing) {
             countInput.value = state.count;
-            adminDirectInput.value = state.count;
             if (countChanged) {
               countInput.classList.add('scale-105');
               setTimeout(() => countInput.classList.remove('scale-105'), 150);
@@ -1410,7 +1581,6 @@
             maintenanceMode: state.maintenanceMode
           }));
 
-          // Pull history so both mobiles show updated logs immediately
           await fetchLatestHistory();
         }
 
@@ -1421,13 +1591,12 @@
           dbModeBadge.className = 'text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700';
         }
       } catch (e) {
-        // Fallback indication if offline
+        // Standby
       } finally {
         isSyncing = false;
       }
     }
 
-    // Start background polling loop (every 1.5 seconds)
     function startRealtimePolling() {
       if (syncIntervalId) clearInterval(syncIntervalId);
       syncIntervalId = setInterval(() => {
@@ -1437,7 +1606,6 @@
       }, 1500);
     }
 
-    // Sync immediately when mobile screen wakes up or tab is opened
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) {
         performRealtimeSync();
@@ -1455,11 +1623,13 @@
     // -------------------------------------------------------------
     async function init() {
       countInput.value = state.count;
-      adminDirectInput.value = state.count;
       syncUiState();
       updateSoundUi();
       renderHistory();
       updateLastUpdatedTime();
+
+      // Check for persistent administrator session
+      await verifyPersistentAdminSession();
 
       // Immediate live DB load & start real-time multi-device sync
       await performRealtimeSync();
@@ -1484,7 +1654,6 @@
     const btnInstallApp = document.getElementById('btnInstallApp');
 
     window.addEventListener('beforeinstallprompt', (e) => {
-      // Prevent standard browser infobar
       e.preventDefault();
       deferredInstallPrompt = e;
       if (btnInstallApp) {
@@ -1514,4 +1683,3 @@
   </script>
 </body>
 </html>
-
