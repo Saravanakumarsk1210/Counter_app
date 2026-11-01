@@ -4,10 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Smart Counter & Activity Tracker</title>
-  <link rel="manifest" href="manifest.json" />
+  <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#4f46e5" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -78,8 +81,21 @@
         </div>
       </div>
 
-      <!-- Right Header Actions (History + Admin) -->
+      <!-- Right Header Actions (History + Admin + Install) -->
       <div class="flex items-center space-x-2">
+        <!-- Install App Button (Auto-shows when PWA install is ready) -->
+        <button 
+          id="btnInstallApp" 
+          type="button"
+          class="hidden flex items-center gap-1.5 px-2.5 py-2 text-xs font-bold rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 active:scale-95 transition-all no-select border border-indigo-200/80 shadow-xs"
+          title="Install as App on this phone"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          <span>Install</span>
+        </button>
+
         <!-- History Button -->
         <button 
           id="btnOpenHistory" 
@@ -1306,6 +1322,49 @@
     }
 
     init();
+
+    // -------------------------------------------------------------
+    // PWA SERVICE WORKER & APP INSTALL PROMPT
+    // -------------------------------------------------------------
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((reg) => console.log('[PWA] Service Worker active:', reg.scope))
+          .catch((err) => console.warn('[PWA] Service Worker registration failed:', err));
+      });
+    }
+
+    let deferredInstallPrompt = null;
+    const btnInstallApp = document.getElementById('btnInstallApp');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevent standard browser infobar
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      if (btnInstallApp) {
+        btnInstallApp.classList.remove('hidden');
+      }
+    });
+
+    if (btnInstallApp) {
+      btnInstallApp.addEventListener('click', async () => {
+        if (!deferredInstallPrompt) return;
+        deferredInstallPrompt.prompt();
+        const { outcome } = await deferredInstallPrompt.userChoice;
+        if (outcome === 'accepted') {
+          showToast('Installing CounterApp...', '📲');
+          btnInstallApp.classList.add('hidden');
+        }
+        deferredInstallPrompt = null;
+      });
+    }
+
+    window.addEventListener('appinstalled', () => {
+      showToast('App installed on your device!', '🎉');
+      if (btnInstallApp) {
+        btnInstallApp.classList.add('hidden');
+      }
+    });
   </script>
 </body>
 </html>

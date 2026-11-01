@@ -44,6 +44,29 @@ app.get('/manifest.json', (req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
+// PWA Service Worker & Icons
+app.get('/sw.js', (req, res) => {
+  const swPath = path.join(__dirname, 'sw.js');
+  if (fs.existsSync(swPath)) {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.setHeader('Service-Worker-Allowed', '/');
+    return res.sendFile(swPath);
+  }
+  res.status(404).send('Service worker not found');
+});
+
+app.get('/icon-192.png', (req, res) => {
+  const p = path.join(__dirname, 'icon-192.png');
+  if (fs.existsSync(p)) return res.sendFile(p);
+  res.status(404).send('Icon not found');
+});
+
+app.get('/icon-512.png', (req, res) => {
+  const p = path.join(__dirname, 'icon-512.png');
+  if (fs.existsSync(p)) return res.sendFile(p);
+  res.status(404).send('Icon not found');
+});
+
 // -------------------------------------------------------------
 // NEON DATABASE CONNECTION
 // -------------------------------------------------------------
