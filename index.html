@@ -260,6 +260,14 @@
 
       <span class="h-4 w-px bg-slate-200"></span>
 
+      <!-- Sound FX Toggle Button -->
+      <button id="btnToggleSound" type="button" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-200 text-slate-600 font-semibold active:scale-95 transition-all no-select" title="Toggle audio clicks">
+        <span id="soundIcon">🔊</span>
+        <span id="soundLabel" class="text-[11px]">Sound ON</span>
+      </button>
+
+      <span class="h-4 w-px bg-slate-200"></span>
+
       <div class="text-[11px] text-slate-400">
         Step: <span class="font-bold text-slate-600 step-label">1</span>
       </div>
@@ -559,6 +567,111 @@
     const toast = document.getElementById('toast');
     const toastIcon = document.getElementById('toastIcon');
     const toastMsg = document.getElementById('toastMsg');
+
+    // Sound Controls
+    const btnToggleSound = document.getElementById('btnToggleSound');
+    const soundIcon = document.getElementById('soundIcon');
+    const soundLabel = document.getElementById('soundLabel');
+    let soundEnabled = localStorage.getItem('smart_counter_sound') !== 'false';
+
+    // -------------------------------------------------------------
+    // WEB AUDIO API SOUND SYSTEM (Zero latency, works 100% offline)
+    // -------------------------------------------------------------
+    const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!audioCtx && AudioCtxClass) {
+        audioCtx = new AudioCtxClass();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    // Play crisp ascending pop sound on Increment (+)
+    function playIncrementSound() {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sine';
+        // Sweet ascending frequency sweep (pop)
+        osc.frequency.setValueAtTime(750, now);
+        osc.frequency.exponentialRampToValueAtTime(1350, now + 0.04);
+
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.07);
+
+        if (navigator.vibrate) navigator.vibrate(12);
+      } catch (err) {}
+    }
+
+    // Play deeper descending tap sound on Decrement (−)
+    function playDecrementSound() {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sine';
+        // Satisfying descending frequency sweep (click/drop)
+        osc.frequency.setValueAtTime(650, now);
+        osc.frequency.exponentialRampToValueAtTime(300, now + 0.05);
+
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.07);
+
+        if (navigator.vibrate) navigator.vibrate(18);
+      } catch (err) {}
+    }
+
+    function updateSoundUi() {
+      if (!soundIcon || !soundLabel) return;
+      if (soundEnabled) {
+        soundIcon.innerText = '🔊';
+        soundLabel.innerText = 'Sound ON';
+        if (btnToggleSound) btnToggleSound.classList.remove('opacity-60');
+      } else {
+        soundIcon.innerText = '🔇';
+        soundLabel.innerText = 'Muted';
+        if (btnToggleSound) btnToggleSound.classList.add('opacity-60');
+      }
+    }
+
+    if (btnToggleSound) {
+      btnToggleSound.addEventListener('click', () => {
+        soundEnabled = !soundEnabled;
+        localStorage.setItem('smart_counter_sound', soundEnabled ? 'true' : 'false');
+        updateSoundUi();
+        if (soundEnabled) {
+          playIncrementSound();
+          showToast('Sound effects enabled', '🔊');
+        } else {
+          showToast('Sound muted', '🔇');
+        }
+      });
+    }
 
     // -------------------------------------------------------------
     // HELPERS: TOAST & DATE FORMATTER
@@ -910,6 +1023,7 @@
     // EVENT LISTENERS: MAIN COUNTER CONTROLS
     // -------------------------------------------------------------
     btnIncrement.addEventListener('click', () => {
+      playIncrementSound();
       if (state.maintenanceMode && !state.isAdminAuthenticated) {
         showToast('System is in maintenance mode', '⚠️');
         return;
@@ -918,6 +1032,7 @@
     });
 
     btnDecrement.addEventListener('click', () => {
+      playDecrementSound();
       if (state.maintenanceMode && !state.isAdminAuthenticated) {
         showToast('System is in maintenance mode', '⚠️');
         return;
@@ -1129,11 +1244,13 @@
 
     // Admin Scenario Controls (+, -, direct input)
     adminBtnDec.addEventListener('click', () => {
+      playDecrementSound();
       const next = state.count - state.step;
       updateCount(next, 'decrement', 'Admin');
     });
 
     adminBtnInc.addEventListener('click', () => {
+      playIncrementSound();
       const next = state.count + state.step;
       updateCount(next, 'increment', 'Admin');
     });
@@ -1312,6 +1429,7 @@
       countInput.value = state.count;
       adminDirectInput.value = state.count;
       syncUiState();
+      updateSoundUi();
       renderHistory();
       updateLastUpdatedTime();
 
