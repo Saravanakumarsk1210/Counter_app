@@ -47,20 +47,17 @@ app.get('/manifest.json', (req, res) => {
 // -------------------------------------------------------------
 // NEON DATABASE CONNECTION
 // -------------------------------------------------------------
-const databaseUrl = process.env.DATABASE_URL;
+const DEFAULT_DATABASE_URL = "postgresql://neondb_owner:npg_cfpPUEd8oHh1@ep-ancient-forest-b5cn5fwc-pooler.c-7.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
+const databaseUrl = process.env.DATABASE_URL || DEFAULT_DATABASE_URL;
 let sql = null;
 let isDbConnected = false;
 
-if (databaseUrl && databaseUrl.trim() !== '' && !databaseUrl.includes('your_')) {
-  try {
-    sql = neon(databaseUrl);
-    isDbConnected = true;
-    console.log('[Neon DB] Initialized Neon Serverless client.');
-  } catch (err) {
-    console.error('[Neon DB] Connection error:', err.message);
-  }
-} else {
-  console.warn('[Neon DB] DATABASE_URL not yet configured in .env. Running in standby mode.');
+try {
+  sql = neon(databaseUrl);
+  isDbConnected = true;
+  console.log('[Neon DB] Initialized Neon Serverless client.');
+} catch (err) {
+  console.error('[Neon DB] Connection error:', err.message);
 }
 
 let isDbInitialized = false;
@@ -130,6 +127,14 @@ app.use(async (req, res, next) => {
 // REST API ROUTES
 // -------------------------------------------------------------
 
+// Disable any caching on API routes so all devices get real-time state
+app.use('/api', (req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  next();
+});
+
 // DB Health Check
 app.get('/api/status', async (req, res) => {
   if (!sql) {
@@ -161,16 +166,17 @@ app.get('/api/state', async (req, res) => {
     return res.status(503).json({ error: 'Database not connected' });
   }
   try {
-    const rows = await sql`SELECT count, maintenance_mode, step, allow_negative FROM counter_state WHERE id = 1`;
+    const rows = await sql`SELECT count, maintenance_mode, step, allow_negative, updated_at FROM counter_state WHERE id = 1`;
     if (rows.length === 0) {
-      return res.json({ count: 0, maintenanceMode: false, step: 1, allowNegative: true });
+      return res.json({ count: 0, maintenanceMode: false, step: 1, allowNegative: true, updatedAt: new Date().toISOString() });
     }
     const state = rows[0];
     res.json({
       count: state.count,
       maintenanceMode: state.maintenance_mode,
       step: state.step,
-      allowNegative: state.allow_negative
+      allowNegative: state.allow_negative,
+      updatedAt: state.updated_at
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -257,16 +263,28 @@ app.post('/api/settings', async (req, res) => {
   }
   const { maintenanceMode, step, allowNegative } = req.body;
   try {
+    const currentRows = await sql`SELECT maintenance_mode, step, allow_negative FROM counter_state WHERE id = 1`;
+    const current = currentRows[0] || {};
+    
+    const nextMaintenance = typeof maintenanceMode === 'boolean' ? maintenanceMode : current.maintenance_mode;
+    const nextStep = typeof step === 'number' ? step : current.step;
+    const nextAllowNegative = typeof allowNegative === 'boolean' ? allowNegative : current.allow_negative;
+
     await sql`
       UPDATE counter_state 
       SET 
-        maintenance_mode = COALESCE(${maintenanceMode}, maintenance_mode),
-        step = COALESCE(${step}, step),
-        allow_negative = COALESCE(${allowNegative}, allow_negative),
+        maintenance_mode = ${nextMaintenance},
+        step = ${nextStep},
+        allow_negative = ${nextAllowNegative},
         updated_at = NOW()
       WHERE id = 1
     `;
-    res.json({ success: true });
+    res.json({ 
+      success: true, 
+      maintenanceMode: nextMaintenance, 
+      step: nextStep, 
+      allowNegative: nextAllowNegative 
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -800,21 +800,25 @@
       countInput.classList.add('scale-105');
       setTimeout(() => countInput.classList.remove('scale-105'), 150);
 
-      // Async sync to Neon DB if backend is live
-      if (dbOnline) {
-        try {
-          const res = await fetch('/api/count', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ newValue: targetVal, action: actionType, source: source })
-          });
-          if (!res.ok) {
-            const errData = await res.json();
-            console.warn('[Neon DB] Sync notice:', errData.error);
+      // Real-time sync to Neon DB
+      try {
+        const res = await fetch('/api/count', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store',
+          body: JSON.stringify({ newValue: targetVal, action: actionType, source: source })
+        });
+        if (res.ok) {
+          performRealtimeSync();
+        } else {
+          const errData = await res.json();
+          if (res.status === 403) {
+            showToast(errData.error || 'System is in maintenance mode', '⚠️');
+            performRealtimeSync();
           }
-        } catch (e) {
-          console.warn('[Neon DB] Could not reach DB backend:', e);
         }
+      } catch (e) {
+        console.warn('[Neon DB] Could not reach DB backend:', e);
       }
     }
 
@@ -876,13 +880,14 @@
       localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(payload));
       syncUiState();
 
-      if (dbOnline) {
-        fetch('/api/settings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        }).catch(err => console.warn('[Neon DB] Settings sync notice:', err));
-      }
+      fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store',
+        body: JSON.stringify(payload)
+      })
+      .then(() => performRealtimeSync())
+      .catch(err => console.warn('[Neon DB] Settings sync notice:', err));
     }
 
     // -------------------------------------------------------------
@@ -921,12 +926,14 @@
     let previousFocusedValue = 0;
 
     countInput.addEventListener('focus', () => {
+      isUserEditing = true;
       previousFocusedValue = state.count;
       editFeedback.innerText = 'Editing... Press Enter to confirm';
       editFeedback.classList.add('text-indigo-600', 'font-semibold');
     });
 
     countInput.addEventListener('blur', () => {
+      isUserEditing = false;
       if (state.maintenanceMode && !state.isAdminAuthenticated) {
         countInput.value = state.count;
         return;
@@ -1181,68 +1188,121 @@
     });
 
     // -------------------------------------------------------------
-    // NEON DATABASE SYNC ENGINE
+    // REAL-TIME MULTI-DEVICE SYNCHRONIZATION ENGINE
     // -------------------------------------------------------------
-    async function syncFromDatabase() {
+    let isUserEditing = false;
+    let isSyncing = false;
+    let syncIntervalId = null;
+
+    async function fetchLatestHistory() {
       try {
-        const res = await fetch('/api/status');
-        if (!res.ok) throw new Error('API server unreachable');
-        const data = await res.json();
-        
-        if (data.connected) {
-          dbOnline = true;
-          dbStatusText.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Connected to Neon PostgreSQL';
-          dbModeBadge.innerText = 'Live DB';
-          dbModeBadge.className = 'text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700';
-
-          // 1. Fetch live count & state directly from Neon PostgreSQL
-          const stateRes = await fetch('/api/state');
-          if (stateRes.ok) {
-            const dbState = await stateRes.json();
-            state.count = dbState.count;
-            state.maintenanceMode = dbState.maintenanceMode;
-            state.step = dbState.step;
-            state.allowNegative = dbState.allowNegative;
-            countInput.value = state.count;
-            adminDirectInput.value = state.count;
-            syncUiState();
+        const histRes = await fetch('/api/history', { cache: 'no-store' });
+        if (histRes.ok) {
+          const dbHistory = await histRes.json();
+          if (Array.isArray(dbHistory)) {
+            state.history = dbHistory;
+            saveHistory();
+            renderHistory();
+            updateLastUpdatedTime();
           }
-
-          // 2. Fetch live history records directly from Neon PostgreSQL
-          const histRes = await fetch('/api/history');
-          if (histRes.ok) {
-            const dbHistory = await histRes.json();
-            if (Array.isArray(dbHistory) && dbHistory.length > 0) {
-              state.history = dbHistory;
-              saveHistory();
-              renderHistory();
-              updateLastUpdatedTime();
-            }
-          }
-        } else {
-          dbOnline = false;
-          dbStatusText.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span> Standby: Add DATABASE_URL to .env`;
-          dbModeBadge.innerText = 'Local Cache';
-          dbModeBadge.className = 'text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800';
         }
-      } catch (e) {
-        dbOnline = false;
-        dbStatusText.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-400"></span> Standby (Local Mode)';
-        dbModeBadge.innerText = 'Local Cache';
-        dbModeBadge.className = 'text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-slate-200 text-slate-600';
+      } catch (err) {
+        console.warn('[Sync] History fetch error:', err);
       }
     }
+
+    async function performRealtimeSync() {
+      if (isSyncing) return;
+      isSyncing = true;
+      try {
+        const stateRes = await fetch('/api/state', { cache: 'no-store' });
+        if (!stateRes.ok) throw new Error('API unreachable');
+        const dbState = await stateRes.json();
+
+        // Check if state changed on server (from any mobile or admin)
+        const countChanged = dbState.count !== state.count;
+        const maintenanceChanged = dbState.maintenanceMode !== state.maintenanceMode;
+        const stepChanged = dbState.step !== state.step;
+        const allowNegativeChanged = dbState.allowNegative !== state.allowNegative;
+
+        if (countChanged || maintenanceChanged || stepChanged || allowNegativeChanged) {
+          state.count = dbState.count;
+          state.maintenanceMode = dbState.maintenanceMode;
+          state.step = dbState.step;
+          state.allowNegative = dbState.allowNegative;
+
+          // Only update input if current user isn't actively editing
+          if (!isUserEditing) {
+            countInput.value = state.count;
+            adminDirectInput.value = state.count;
+            if (countChanged) {
+              countInput.classList.add('scale-105');
+              setTimeout(() => countInput.classList.remove('scale-105'), 150);
+            }
+          }
+
+          syncUiState();
+          localStorage.setItem(STORAGE_KEY_COUNT, state.count.toString());
+          localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify({
+            step: state.step,
+            allowNegative: state.allowNegative,
+            maintenanceMode: state.maintenanceMode
+          }));
+
+          // Pull history so both mobiles show updated logs immediately
+          await fetchLatestHistory();
+        }
+
+        if (!dbOnline) {
+          dbOnline = true;
+          dbStatusText.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Multi-Device Live Sync (Neon DB)';
+          dbModeBadge.innerText = 'Live DB';
+          dbModeBadge.className = 'text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700';
+        }
+      } catch (e) {
+        // Fallback indication if offline
+      } finally {
+        isSyncing = false;
+      }
+    }
+
+    // Start background polling loop (every 1.5 seconds)
+    function startRealtimePolling() {
+      if (syncIntervalId) clearInterval(syncIntervalId);
+      syncIntervalId = setInterval(() => {
+        if (!document.hidden) {
+          performRealtimeSync();
+        }
+      }, 1500);
+    }
+
+    // Sync immediately when mobile screen wakes up or tab is opened
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        performRealtimeSync();
+        fetchLatestHistory();
+      }
+    });
+
+    window.addEventListener('focus', () => {
+      performRealtimeSync();
+      fetchLatestHistory();
+    });
 
     // -------------------------------------------------------------
     // INITIAL BOOTSTRAP
     // -------------------------------------------------------------
-    function init() {
+    async function init() {
       countInput.value = state.count;
       adminDirectInput.value = state.count;
       syncUiState();
       renderHistory();
       updateLastUpdatedTime();
-      syncFromDatabase();
+
+      // Immediate live DB load & start real-time multi-device sync
+      await performRealtimeSync();
+      await fetchLatestHistory();
+      startRealtimePolling();
     }
 
     init();
