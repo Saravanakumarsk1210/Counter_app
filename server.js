@@ -362,14 +362,14 @@ app.get('/api/history', async (req, res) => {
   }
 });
 
-// 5. UPDATE Count & Record History in Neon DB (Role-Enforced)
+// 5. UPDATE Count & Record History in Neon DB (Role-Enforced with Offline Delta Support & Idempotency)
 app.post('/api/count', async (req, res) => {
   if (!sql || !isDbConnected) {
     return res.status(503).json({ error: 'Database not connected' });
   }
-  const { newValue, action } = req.body;
-  if (typeof newValue !== 'number') {
-    return res.status(400).json({ error: 'newValue must be a number' });
+  const { newValue, delta, action, id: clientTxId, timestamp: clientTimestamp } = req.body;
+  if (typeof newValue !== 'number' && typeof delta !== 'number') {
+    return res.status(400).json({ error: 'Either newValue or delta must be provided as a number' });
   }
 
   const isAdmin = await isValidAdminSession(req);
@@ -384,10 +384,29 @@ app.post('/api/count', async (req, res) => {
   }
 
   try {
-    // 1. Get current count & maintenance mode
-    const currentRows = await sql`SELECT count, maintenance_mode FROM counter_state WHERE id = 1 FOR UPDATE`;
+    // 1. Idempotency Check: Prevent duplicate increments on flaky reconnections
+    if (clientTxId) {
+      const existing = await sql`
+        SELECT id, new_value AS "newValue" FROM counter_history 
+        WHERE id = ${clientTxId} 
+        LIMIT 1
+      `;
+      if (existing.length > 0) {
+        const stateRows = await sql`SELECT count FROM counter_state WHERE id = 1`;
+        return res.json({
+          success: true,
+          duplicate: true,
+          count: stateRows[0]?.count ?? existing[0].newValue,
+          message: 'Operation already processed'
+        });
+      }
+    }
+
+    // 2. Get current count & maintenance mode with row lock
+    const currentRows = await sql`SELECT count, maintenance_mode, allow_negative FROM counter_state WHERE id = 1 FOR UPDATE`;
     const prevValue = currentRows[0]?.count ?? 0;
     const maintenanceMode = currentRows[0]?.maintenance_mode ?? false;
+    const allowNegative = currentRows[0]?.allow_negative ?? true;
 
     // SECURITY ENFORCEMENT: In maintenance mode, only Admin can update count
     if (maintenanceMode && !isAdmin) {
@@ -396,9 +415,23 @@ app.post('/api/count', async (req, res) => {
       });
     }
 
-    const difference = newValue - prevValue;
-    const id = 'hist_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
-    const now = new Date();
+    // 3. Compute new target count: supports atomic delta (offline sync) or explicit target value
+    let targetVal;
+    if (typeof delta === 'number') {
+      targetVal = prevValue + delta;
+      if (!allowNegative && targetVal < 0) {
+        targetVal = 0;
+      }
+    } else {
+      targetVal = newValue;
+      if (!allowNegative && targetVal < 0) {
+        targetVal = 0;
+      }
+    }
+
+    const difference = targetVal - prevValue;
+    const id = clientTxId || ('hist_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4));
+    const now = clientTimestamp ? new Date(clientTimestamp) : new Date();
 
     // Standardize transaction action names
     let cleanAction = 'Manual Edit';
@@ -406,30 +439,118 @@ app.post('/api/count', async (req, res) => {
     else if (rawAction === 'decrement') cleanAction = 'Decrement';
     else if (rawAction === 'reset') cleanAction = 'Reset';
 
-    // 2. Update state & insert history atomically
+    // 4. Update state & insert history atomically
     await sql`
       UPDATE counter_state 
-      SET count = ${newValue}, updated_at = ${now} 
+      SET count = ${targetVal}, updated_at = NOW() 
       WHERE id = 1
     `;
 
     await sql`
       INSERT INTO counter_history (id, timestamp, action, prev_value, new_value, difference, source)
-      VALUES (${id}, ${now}, ${cleanAction}, ${prevValue}, ${newValue}, ${difference}, ${role})
+      VALUES (${id}, ${now}, ${cleanAction}, ${prevValue}, ${targetVal}, ${difference}, ${role})
     `;
 
     res.json({
       success: true,
-      count: newValue,
+      count: targetVal,
       record: {
         id,
         timestamp: now.toISOString(),
         action: cleanAction,
         prevValue,
-        newValue,
+        newValue: targetVal,
         difference,
         source: role
       }
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 5b. BATCH SYNC OFFLINE QUEUE in Neon DB (Atomic Replay)
+app.post('/api/sync/batch', async (req, res) => {
+  if (!sql || !isDbConnected) {
+    return res.status(503).json({ error: 'Database not connected' });
+  }
+  const { actions } = req.body;
+  if (!Array.isArray(actions) || actions.length === 0) {
+    return res.status(400).json({ error: 'actions array required' });
+  }
+  const isAdmin = await isValidAdminSession(req);
+
+  try {
+    const currentRows = await sql`SELECT count, maintenance_mode, allow_negative FROM counter_state WHERE id = 1 FOR UPDATE`;
+    let currentCount = currentRows[0]?.count ?? 0;
+    const maintenanceMode = currentRows[0]?.maintenance_mode ?? false;
+    const allowNegative = currentRows[0]?.allow_negative ?? true;
+
+    if (maintenanceMode && !isAdmin) {
+      return res.status(403).json({
+        error: 'System is currently under maintenance. Counter updates are temporarily disabled.'
+      });
+    }
+
+    const processed = [];
+    for (const act of actions) {
+      const { id: clientTxId, delta, newValue, action, timestamp, role } = act;
+      const effectiveRole = isAdmin ? 'Admin' : (role === 'Admin' ? 'Admin' : 'Moorthy');
+      const rawAction = String(action || 'modify').toLowerCase();
+      
+      // Normal users cannot reset
+      if ((rawAction === 'reset' || (newValue === 0 && rawAction === 'reset')) && !isAdmin) {
+        continue;
+      }
+
+      // Idempotency: skip if already inserted
+      if (clientTxId) {
+        const existing = await sql`SELECT id FROM counter_history WHERE id = ${clientTxId} LIMIT 1`;
+        if (existing.length > 0) continue;
+      }
+
+      const prevValue = currentCount;
+      let targetVal;
+      if (typeof delta === 'number') {
+        targetVal = prevValue + delta;
+      } else if (typeof newValue === 'number') {
+        targetVal = newValue;
+      } else {
+        continue;
+      }
+
+      if (!allowNegative && targetVal < 0) {
+        targetVal = 0;
+      }
+
+      const difference = targetVal - prevValue;
+      const id = clientTxId || ('hist_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4));
+      const now = timestamp ? new Date(timestamp) : new Date();
+
+      let cleanAction = 'Manual Edit';
+      if (rawAction === 'increment') cleanAction = 'Increment';
+      else if (rawAction === 'decrement') cleanAction = 'Decrement';
+      else if (rawAction === 'reset') cleanAction = 'Reset';
+
+      await sql`
+        INSERT INTO counter_history (id, timestamp, action, prev_value, new_value, difference, source)
+        VALUES (${id}, ${now}, ${cleanAction}, ${prevValue}, ${targetVal}, ${difference}, ${effectiveRole})
+      `;
+
+      currentCount = targetVal;
+      processed.push({ id, targetVal });
+    }
+
+    await sql`
+      UPDATE counter_state 
+      SET count = ${currentCount}, updated_at = NOW() 
+      WHERE id = 1
+    `;
+
+    res.json({
+      success: true,
+      count: currentCount,
+      processedCount: processed.length
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

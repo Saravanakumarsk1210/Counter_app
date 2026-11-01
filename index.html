@@ -801,9 +801,11 @@
       
       const time = `${formattedHours}:${minutes} ${ampm}`;
       const date = `${month} ${day}, ${year}`;
-      // Exact user requirement: "11:13 PM Nov 1, 2026"
+      // Exact user requirement: "11:28 PM Nov 1, 2026"
+      // with 11:28 PM bold and date 1 bold
       const fullFormatted = `${time} ${date}`;
-      return { date, time, fullFormatted };
+      const htmlFormatted = `<strong class="font-bold text-slate-800">${time}</strong> ${month} <strong class="font-bold text-slate-800">${day}</strong>, ${year}`;
+      return { date, time, fullFormatted, htmlFormatted };
     }
 
     function getAuthHeaders() {
@@ -863,10 +865,10 @@
     // -------------------------------------------------------------
     // HISTORY RECORDING & RENDERING
     // -------------------------------------------------------------
-    function addHistoryRecord(action, prevVal, newVal, source = (state.currentPortal === 'admin' ? 'Admin' : 'Moorthy')) {
-      const now = new Date().toISOString();
+    function addHistoryRecord(action, prevVal, newVal, source = (state.currentPortal === 'admin' ? 'Admin' : 'Moorthy'), existingId = null, existingTimestamp = null) {
+      const now = existingTimestamp || new Date().toISOString();
       const record = {
-        id: 'hist_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        id: existingId || ('hist_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4)),
         timestamp: now,
         action: action, // 'Increment', 'Decrement', 'Manual Edit', 'Reset'
         prevValue: prevVal,
@@ -912,38 +914,46 @@
 
       const latestItems = state.history.slice(0, 3);
       recentHistoryContainer.innerHTML = latestItems.map(item => {
-        const { fullFormatted } = formatDateTime(item.timestamp);
+        const { htmlFormatted } = formatDateTime(item.timestamp);
         let badgeColor = 'bg-slate-100 text-slate-700 border-slate-200';
         let diffSign = item.difference > 0 ? `+${item.difference}` : `${item.difference}`;
         let iconSymbol = '•';
 
         const isAdmin = item.source === 'Admin';
-        const userName = isAdmin ? 'Admin' : 'Moorthy';
         const absDiff = Math.abs(item.difference) || 1;
         const normAction = (item.action || '').toLowerCase();
-        let actionLabel = '';
+
+        // Exact styling requested:
+        // "+1 Admin (admin should be in orange and not bold) ,+1 Moorthy (Moorthy should be in Blue and not bold)"
+        const styledName = isAdmin 
+          ? `<span class="font-normal" style="color: #FF5500;">Admin</span>` 
+          : `<span class="font-normal text-blue-600">Moorthy</span>`;
+
+        let actionPrefix = '';
 
         if (normAction === 'increment') {
           badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-          actionLabel = `+${absDiff} ${userName}`;
+          actionPrefix = `+${absDiff}`;
           iconSymbol = '+';
         } else if (normAction === 'decrement') {
           badgeColor = 'bg-rose-50 text-rose-700 border-rose-200';
-          actionLabel = `-${absDiff} ${userName}`;
+          actionPrefix = `-${absDiff}`;
           iconSymbol = '−';
         } else if (normAction === 'manual edit' || normAction === 'direct_edit') {
           badgeColor = isAdmin 
             ? 'bg-[#fff0e6] text-[#FF5500] border-[#ffccb3]' 
             : 'bg-indigo-50 text-indigo-700 border-indigo-200';
-          actionLabel = `✏️ Edit ${userName}`;
+          actionPrefix = `✏️ Edit`;
           iconSymbol = '✎';
         } else if (normAction === 'reset') {
           badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
-          actionLabel = `🔄 Reset ${userName}`;
+          actionPrefix = `🔄 Reset`;
           iconSymbol = '↺';
         } else {
-          actionLabel = `${item.action} ${userName}`;
+          actionPrefix = item.action || 'Modify';
         }
+
+        const actionLabelHtml = `<span class="font-bold text-slate-900">${actionPrefix}</span> ${styledName}`;
 
         return `
           <div class="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100/90 border border-slate-200/80 flex items-center justify-between text-xs transition-colors">
@@ -953,10 +963,10 @@
               </span>
               <div class="flex flex-col">
                 <div class="flex items-center gap-1.5">
-                  <span class="font-bold text-slate-800 text-xs">${actionLabel}</span>
+                  <span class="text-xs">${actionLabelHtml}</span>
                 </div>
                 <div class="text-[10px] text-slate-400">
-                  ${fullFormatted}
+                  ${htmlFormatted}
                 </div>
               </div>
             </div>
@@ -991,44 +1001,52 @@
       }
 
       historyListContainer.innerHTML = state.history.map(item => {
-        const { fullFormatted } = formatDateTime(item.timestamp);
+        const { htmlFormatted } = formatDateTime(item.timestamp);
         let badgeColor = 'bg-slate-100 text-slate-700 border-slate-200';
         let diffSign = item.difference > 0 ? `+${item.difference}` : `${item.difference}`;
 
         const isAdmin = item.source === 'Admin';
-        const userName = isAdmin ? 'Admin' : 'Moorthy';
         const absDiff = Math.abs(item.difference) || 1;
         const normAction = (item.action || '').toLowerCase();
-        let actionLabel = '';
+
+        // Exact styling requested:
+        // "+1 Admin (admin should be in orange and not bold) ,+1 Moorthy (Moorthy should be in Blue and not bold)"
+        const styledName = isAdmin 
+          ? `<span class="font-normal" style="color: #FF5500;">Admin</span>` 
+          : `<span class="font-normal text-blue-600">Moorthy</span>`;
+
+        let actionPrefix = '';
 
         if (normAction === 'increment') {
           badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-          actionLabel = `+${absDiff} ${userName}`;
+          actionPrefix = `+${absDiff}`;
         } else if (normAction === 'decrement') {
           badgeColor = 'bg-rose-50 text-rose-700 border-rose-200';
-          actionLabel = `-${absDiff} ${userName}`;
+          actionPrefix = `-${absDiff}`;
         } else if (normAction === 'manual edit' || normAction === 'direct_edit') {
           badgeColor = isAdmin 
             ? 'bg-[#fff0e6] text-[#FF5500] border-[#ffccb3]' 
             : 'bg-indigo-50 text-indigo-700 border-indigo-200';
-          actionLabel = `✏️ Edit ${userName}`;
+          actionPrefix = `✏️ Edit`;
         } else if (normAction === 'reset') {
           badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
-          actionLabel = `🔄 Reset ${userName}`;
+          actionPrefix = `🔄 Reset`;
         } else {
-          actionLabel = `${item.action} ${userName}`;
+          actionPrefix = item.action || 'Modify';
         }
+
+        const actionLabelHtml = `<span class="font-bold text-slate-900">${actionPrefix}</span> ${styledName}`;
 
         return `
           <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs transition-all hover:bg-slate-100/70">
             <div class="flex flex-col gap-0.5">
               <div class="flex items-center gap-1.5">
-                <span class="px-2 py-0.5 rounded-md font-bold text-[10px] border ${badgeColor}">
-                  ${actionLabel}
+                <span class="px-2 py-0.5 rounded-md text-[11px] border ${badgeColor} inline-flex items-center gap-1">
+                  ${actionLabelHtml}
                 </span>
               </div>
               <div class="text-[11px] text-slate-400 mt-1">
-                ${fullFormatted}
+                ${htmlFormatted}
               </div>
             </div>
             
@@ -1050,17 +1068,161 @@
         iso = state.history[0].timestamp;
       }
       if (iso) {
-        const { fullFormatted } = formatDateTime(iso);
-        lastUpdatedLabel.innerText = fullFormatted;
+        const { htmlFormatted } = formatDateTime(iso);
+        lastUpdatedLabel.innerHTML = htmlFormatted;
       } else {
         lastUpdatedLabel.innerText = 'No updates yet';
       }
     }
 
     // -------------------------------------------------------------
-    // COUNT UPDATES & VALIDATIONS
+    // OFFLINE QUEUE & RESILIENT SYNC ENGINE
     // -------------------------------------------------------------
-    async function updateCount(newVal, actionType) {
+    const STORAGE_KEY_OFFLINE_QUEUE = 'smart_counter_pending_queue';
+
+    function getPendingQueue() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_OFFLINE_QUEUE);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function savePendingQueue(queue) {
+      try {
+        localStorage.setItem(STORAGE_KEY_OFFLINE_QUEUE, JSON.stringify(queue));
+      } catch (e) {}
+    }
+
+    function enqueuePendingAction(actionItem) {
+      const queue = getPendingQueue();
+      queue.push(actionItem);
+      savePendingQueue(queue);
+      updateOfflineStatusBanner(queue.length);
+    }
+
+    function updateOfflineStatusBanner(pendingCount, isFlushing = false) {
+      if (pendingCount > 0) {
+        if (isFlushing) {
+          dbStatusText.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-500 animate-spin"></span> Syncing ${pendingCount} offline update${pendingCount > 1 ? 's' : ''}...`;
+          dbModeBadge.innerText = 'Syncing';
+          dbModeBadge.className = 'text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-blue-100 text-blue-700';
+        } else {
+          dbStatusText.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> Offline (${pendingCount} Pending Sync)`;
+          dbModeBadge.innerText = 'Offline';
+          dbModeBadge.className = 'text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-700';
+        }
+      } else if (!navigator.onLine) {
+        dbStatusText.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500"></span> Offline Mode`;
+        dbModeBadge.innerText = 'Offline';
+        dbModeBadge.className = 'text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-rose-100 text-rose-700';
+      } else if (dbOnline) {
+        dbStatusText.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Multi-Device Live Sync (Neon DB)';
+        dbModeBadge.innerText = 'Live DB';
+        dbModeBadge.className = 'text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700';
+      }
+    }
+
+    let isFlushingQueue = false;
+
+    async function flushPendingQueue() {
+      if (isFlushingQueue) return;
+      const queue = getPendingQueue();
+      if (!queue || queue.length === 0) {
+        updateOfflineStatusBanner(0);
+        return;
+      }
+
+      if (!navigator.onLine) {
+        updateOfflineStatusBanner(queue.length);
+        return;
+      }
+
+      isFlushingQueue = true;
+      updateOfflineStatusBanner(queue.length, true);
+
+      try {
+        // Try atomic batch sync first
+        const batchRes = await fetch('/api/sync/batch', {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          cache: 'no-store',
+          body: JSON.stringify({ actions: queue })
+        });
+
+        if (batchRes.ok) {
+          const batchData = await batchRes.json();
+          savePendingQueue([]);
+          if (batchData.count !== undefined) {
+            state.count = batchData.count;
+            countInput.value = state.count;
+            localStorage.setItem(STORAGE_KEY_COUNT, state.count.toString());
+          }
+          showToast('All offline updates synced!', '✅');
+          await fetchLatestHistory();
+          await performRealtimeSync();
+        } else {
+          // Fallback: sequential sync
+          while (queue.length > 0) {
+            const item = queue[0];
+            const payload = {
+              id: item.id,
+              action: item.action,
+              timestamp: item.timestamp
+            };
+            if (typeof item.delta === 'number') {
+              payload.delta = item.delta;
+            } else {
+              payload.newValue = item.newValue;
+            }
+
+            const res = await fetch('/api/count', {
+              method: 'POST',
+              headers: getAuthHeaders(),
+              cache: 'no-store',
+              body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+              const data = await res.json();
+              queue.shift();
+              savePendingQueue(queue);
+              if (data.count !== undefined) {
+                state.count = data.count;
+                countInput.value = state.count;
+                localStorage.setItem(STORAGE_KEY_COUNT, state.count.toString());
+              }
+            } else {
+              const errData = await res.json().catch(() => ({}));
+              if (res.status === 403) {
+                showToast(errData.error || 'Sync rejected: Maintenance active', '⚠️');
+                queue.shift();
+                savePendingQueue(queue);
+              } else {
+                break;
+              }
+            }
+          }
+
+          if (queue.length === 0) {
+            showToast('All offline updates synced!', '✅');
+            await fetchLatestHistory();
+            await performRealtimeSync();
+          }
+        }
+      } catch (err) {
+        console.warn('[Offline Sync Engine] Deferred:', err);
+      } finally {
+        isFlushingQueue = false;
+        updateOfflineStatusBanner(getPendingQueue().length);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // COUNT UPDATES & VALIDATIONS (Atomic Delta & Offline Aware)
+    // -------------------------------------------------------------
+    async function updateCount(newVal, actionType, deltaVal = null) {
       let targetVal = parseInt(newVal, 10);
       if (isNaN(targetVal)) {
         targetVal = 0;
@@ -1084,7 +1246,7 @@
         return;
       }
 
-      if (state.count === targetVal) {
+      if (state.count === targetVal && deltaVal === null) {
         countInput.value = state.count;
         return;
       }
@@ -1094,31 +1256,82 @@
       countInput.value = state.count;
 
       localStorage.setItem(STORAGE_KEY_COUNT, state.count.toString());
-      addHistoryRecord(actionType, prev, state.count, state.currentPortal === 'admin' ? 'Admin' : 'Moorthy');
+
+      const clientTxId = 'hist_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+      const clientTimestamp = new Date().toISOString();
+      const currentRole = state.currentPortal === 'admin' ? 'Admin' : 'Moorthy';
+
+      addHistoryRecord(actionType, prev, state.count, currentRole, clientTxId, clientTimestamp);
 
       // Visual pulse feedback
       countInput.classList.add('scale-105');
       setTimeout(() => countInput.classList.remove('scale-105'), 150);
 
+      const actionItem = {
+        id: clientTxId,
+        action: actionType,
+        newValue: targetVal,
+        delta: typeof deltaVal === 'number' ? deltaVal : (targetVal - prev),
+        timestamp: clientTimestamp,
+        role: currentRole
+      };
+
+      // If device is offline, push directly to queue and persist
+      if (!navigator.onLine) {
+        enqueuePendingAction(actionItem);
+        showToast('Offline: Tap saved locally, will sync when online', '💾');
+        return;
+      }
+
+      // If pending queue already has items waiting, add this and flush all
+      const currentQueue = getPendingQueue();
+      if (currentQueue.length > 0) {
+        enqueuePendingAction(actionItem);
+        flushPendingQueue();
+        return;
+      }
+
       // Real-time Neon DB API call
       try {
+        const payload = {
+          id: clientTxId,
+          action: actionType,
+          timestamp: clientTimestamp
+        };
+        if (typeof deltaVal === 'number') {
+          payload.delta = deltaVal;
+        } else {
+          payload.newValue = targetVal;
+        }
+
         const res = await fetch('/api/count', {
           method: 'POST',
           headers: getAuthHeaders(),
           cache: 'no-store',
-          body: JSON.stringify({ newValue: targetVal, action: actionType })
+          body: JSON.stringify(payload)
         });
+
         if (res.ok) {
+          const resData = await res.json();
+          if (resData.count !== undefined && resData.count !== state.count) {
+            state.count = resData.count;
+            countInput.value = state.count;
+            localStorage.setItem(STORAGE_KEY_COUNT, state.count.toString());
+          }
           performRealtimeSync();
         } else {
-          const errData = await res.json();
+          const errData = await res.json().catch(() => ({}));
           if (res.status === 403) {
             showToast(errData.error || 'Permission denied', '⚠️');
             performRealtimeSync();
+          } else {
+            // Queue for retry
+            enqueuePendingAction(actionItem);
           }
         }
       } catch (e) {
-        console.warn('[Neon DB] Sync notice:', e);
+        console.warn('[Offline Engine] Network fetch failed, queued locally:', e);
+        enqueuePendingAction(actionItem);
       }
     }
 
@@ -1183,7 +1396,7 @@
         showToast('System is currently under maintenance. Counter updates are temporarily disabled.', '⚠️');
         return;
       }
-      updateCount(state.count + state.step, 'Increment');
+      updateCount(state.count + state.step, 'Increment', state.step);
     });
 
     btnDecrement.addEventListener('click', () => {
@@ -1192,7 +1405,7 @@
         showToast('System is currently under maintenance. Counter updates are temporarily disabled.', '⚠️');
         return;
       }
-      updateCount(state.count - state.step, 'Decrement');
+      updateCount(state.count - state.step, 'Decrement', -state.step);
     });
 
     // Reset to 0 (Admin Portal Only)
@@ -1202,7 +1415,7 @@
         return;
       }
       if (confirm('Reset the counter value to 0?')) {
-        updateCount(0, 'Reset');
+        updateCount(0, 'Reset', null);
         showToast('Counter reset to 0', '🔄');
       }
     });
@@ -1560,6 +1773,11 @@
       if (isSyncing) return;
       isSyncing = true;
       try {
+        // Flush any offline queued operations first before fetching remote state
+        if (getPendingQueue().length > 0 && navigator.onLine) {
+          await flushPendingQueue();
+        }
+
         const stateRes = await fetch('/api/state', { cache: 'no-store' });
         if (!stateRes.ok) throw new Error('API unreachable');
         const dbState = await stateRes.json();
@@ -1596,9 +1814,7 @@
 
         if (!dbOnline) {
           dbOnline = true;
-          dbStatusText.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Multi-Device Live Sync (Neon DB)';
-          dbModeBadge.innerText = 'Live DB';
-          dbModeBadge.className = 'text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700';
+          updateOfflineStatusBanner(getPendingQueue().length);
         }
       } catch (e) {
         // Standby
@@ -1628,6 +1844,16 @@
       fetchLatestHistory();
     });
 
+    window.addEventListener('online', () => {
+      showToast('Network restored. Syncing offline changes...', '🌐');
+      flushPendingQueue();
+    });
+
+    window.addEventListener('offline', () => {
+      showToast('You are offline. Counter updates will sync when reconnected.', 'ℹ️');
+      updateOfflineStatusBanner(getPendingQueue().length);
+    });
+
     // -------------------------------------------------------------
     // INITIAL BOOTSTRAP
     // -------------------------------------------------------------
@@ -1640,6 +1866,13 @@
 
       // Check for persistent administrator session
       await verifyPersistentAdminSession();
+
+      // Check and flush any pending queue from previous offline session
+      if (getPendingQueue().length > 0 && navigator.onLine) {
+        await flushPendingQueue();
+      } else {
+        updateOfflineStatusBanner(getPendingQueue().length);
+      }
 
       // Immediate live DB load & start real-time multi-device sync
       await performRealtimeSync();
