@@ -1,7 +1,7 @@
 {
-  "name": "Smart Counter App",
-  "short_name": "CounterApp",
-  "description": "Smart Counter with History, Neon DB Sync and Admin Maintenance",
+  "name": "Saravana Stores Counter",
+  "short_name": "Saravana Counter",
+  "description": "Saravana Stores Smart Counter with Real-Time Multi-Device Sync and History",
   "id": "/",
   "start_url": "/",
   "scope": "/",

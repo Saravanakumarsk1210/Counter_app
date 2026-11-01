@@ -67,6 +67,21 @@ app.get('/icon-512.png', (req, res) => {
   res.status(404).send('Icon not found');
 });
 
+// Brand Logo Route
+app.get(['/logo.png', '/Saravana Stores.png', '/Saravana%20Stores.png'], (req, res) => {
+  const logoP = path.join(__dirname, 'logo.png');
+  if (fs.existsSync(logoP)) {
+    res.setHeader('Content-Type', 'image/png');
+    return res.sendFile(logoP);
+  }
+  const altP = path.join(__dirname, 'Saravana Stores.png');
+  if (fs.existsSync(altP)) {
+    res.setHeader('Content-Type', 'image/png');
+    return res.sendFile(altP);
+  }
+  res.status(404).send('Logo not found');
+});
+
 // -------------------------------------------------------------
 // NEON DATABASE CONNECTION
 // -------------------------------------------------------------

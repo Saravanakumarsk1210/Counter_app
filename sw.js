@@ -3,14 +3,15 @@
  * Enables native Android installation and offline caching.
  */
 
-const CACHE_NAME = 'counter-pwa-v1';
+const CACHE_NAME = 'counter-pwa-v2';
 
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/icon-192.png',
-  '/icon-512.png'
+  '/icon-512.png',
+  '/logo.png'
 ];
 
 // Install: Cache essential shell assets
