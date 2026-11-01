@@ -3,11 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Saravana Stores — Smart Counter</title>
+  <title>SSS — Smart Counter</title>
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#4f46e5" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="SSS" />
+  <meta name="application-name" content="SSS" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="icon" type="image/png" href="/logo.png" />
   <link rel="apple-touch-icon" href="/icon-192.png" />
@@ -129,7 +131,7 @@
         <img 
           src="/logo.png" 
           alt="Saravana Stores" 
-          class="h-12 sm:h-14 w-auto max-w-[64px] object-contain shrink-0" 
+          class="h-16 sm:h-20 w-auto max-w-[80px] sm:max-w-[96px] object-contain shrink-0 transition-transform hover:scale-105" 
           onerror="this.onerror=null;this.src='/Saravana%20Stores.png';" 
         />
         <div>
@@ -1910,7 +1912,7 @@
         deferredInstallPrompt.prompt();
         const { outcome } = await deferredInstallPrompt.userChoice;
         if (outcome === 'accepted') {
-          showToast('Installing CounterApp...', '📲');
+          showToast('Installing SSS...', '📲');
           btnInstallApp.classList.add('hidden');
         }
         deferredInstallPrompt = null;
@@ -1918,7 +1920,7 @@
     }
 
     window.addEventListener('appinstalled', () => {
-      showToast('App installed on your device!', '🎉');
+      showToast('SSS installed on your device!', '🎉');
       if (btnInstallApp) {
         btnInstallApp.classList.add('hidden');
       }

@@ -3,7 +3,7 @@
  * Enables native Android installation and offline caching.
  */
 
-const CACHE_NAME = 'counter-pwa-v2';
+const CACHE_NAME = 'counter-pwa-v3';
 
 const PRECACHE_ASSETS = [
   '/',
