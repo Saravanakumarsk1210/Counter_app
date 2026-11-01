@@ -23,7 +23,7 @@ A clean, modern, and mobile-friendly counter web application built with **HTML5*
 - **Clear History**: Clear old audit logs whenever needed.
 
 ### 3. Admin & Maintenance Panel (Top-Right Icon)
-- **Security PIN Gate**: Default Admin PIN is **`1234`**.
+- **Security PIN Gate**: Protected by 4-digit maintenance passkey.
 - **Same Counter Scenario**: Admin has full access to adjust count (`+`, `−`, direct numeric override, force reset).
 - **Maintenance Mode Switch**:
   - Turn **Maintenance Mode ON** to lock public user edits.
