@@ -373,7 +373,7 @@ app.post('/api/count', async (req, res) => {
   }
 
   const isAdmin = await isValidAdminSession(req);
-  const role = isAdmin ? 'Admin' : 'User';
+  const role = isAdmin ? 'Admin' : 'Moorthy';
   const rawAction = String(action || 'modify').toLowerCase();
 
   // SECURITY ENFORCEMENT: Normal users can NEVER reset the counter to zero

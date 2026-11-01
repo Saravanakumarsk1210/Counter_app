@@ -63,43 +63,50 @@
     /* ------------------------------------------------------------- */
     /* DUAL PORTAL THEME STYLING                                    */
     /* ------------------------------------------------------------- */
-    /* Admin Portal: Orange / White Theme */
+    /* Admin Portal: #FF5500 Theme */
     body.portal-admin {
       background-color: #f8fafc;
     }
     body.portal-admin #appFrame {
-      border-color: #fdba74; /* orange-300 */
+      border-color: #ffccb3;
     }
     body.portal-admin #btnIncrement {
-      background-color: #f97316 !important; /* orange-500 */
-      box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.35) !important;
+      background-color: #FF5500 !important;
+      box-shadow: 0 10px 20px -3px rgba(255, 85, 0, 0.4) !important;
     }
     body.portal-admin #btnIncrement:hover {
-      background-color: #ea580c !important; /* orange-600 */
+      background-color: #e04b00 !important;
     }
     body.portal-admin #btnIncrement:active {
-      background-color: #c2410c !important; /* orange-700 */
+      background-color: #cc4400 !important;
     }
     body.portal-admin #countInput:focus {
-      border-color: #f97316 !important;
+      border-color: #FF5500 !important;
     }
     body.portal-admin #editHintPill {
-      color: #ea580c !important;
-      border-color: #fdba74 !important;
+      color: #FF5500 !important;
+      border-color: #ffccb3 !important;
     }
     body.portal-admin #historyBadge {
-      background-color: #f97316 !important;
+      background-color: #FF5500 !important;
     }
     body.portal-admin #inlineHistoryBadge {
-      background-color: #ffedd5 !important;
-      color: #c2410c !important;
+      background-color: #fff0e6 !important;
+      color: #FF5500 !important;
     }
     body.portal-admin #btnViewAllHistoryInline {
-      color: #ea580c !important;
+      color: #FF5500 !important;
+    }
+    body.portal-admin #btnQuickReset {
+      color: #FF5500 !important;
     }
     body.portal-admin #btnQuickReset:hover {
-      background-color: #ffedd5 !important;
-      color: #c2410c !important;
+      background-color: #fff0e6 !important;
+      color: #e04b00 !important;
+    }
+    body.portal-admin #adminModeBanner {
+      background-color: #FF5500 !important;
+      border-color: #e04b00 !important;
     }
 
     /* User Portal: Purple / Indigo Theme (Default) */
@@ -117,14 +124,18 @@
     <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-white/90 backdrop-blur sticky top-0 z-10">
       
       <!-- Application Logo & Title (Click 3 Times to Open Admin Verification) -->
-      <div id="brandHeader" class="flex items-center space-x-2.5 cursor-pointer no-select group transition-transform active:scale-95" title="Saravana Stores (Triple-click for Admin Access)">
-        <div class="w-10 h-10 rounded-2xl overflow-hidden bg-white border border-slate-200/90 shadow-sm flex items-center justify-center shrink-0 p-0.5">
-          <img src="/logo.png" alt="Saravana Stores" class="w-full h-full object-contain rounded-xl" onerror="this.onerror=null;this.src='/Saravana%20Stores.png';" />
-        </div>
+      <div id="brandHeader" class="flex items-center space-x-3 cursor-pointer no-select group transition-transform active:scale-95" title="Saravana Stores (Triple-click for Admin Access)">
+        <!-- Only pure logo, increased size, no box container -->
+        <img 
+          src="/logo.png" 
+          alt="Saravana Stores" 
+          class="h-12 sm:h-14 w-auto max-w-[64px] object-contain shrink-0" 
+          onerror="this.onerror=null;this.src='/Saravana%20Stores.png';" 
+        />
         <div>
           <h1 class="text-base font-extrabold text-slate-900 leading-tight tracking-tight">Saravana Stores</h1>
           <p id="roleIndicator" class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Standard Mode
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Standard Mode (Moorthy)
           </p>
         </div>
       </div>
@@ -162,10 +173,11 @@
         <button 
           id="btnOpenSettings" 
           type="button" 
-          class="hidden relative p-2 rounded-xl bg-orange-100 hover:bg-orange-200 text-orange-800 active:scale-95 transition-all no-select border border-orange-200 shadow-xs"
+          class="hidden relative p-2 rounded-xl text-white active:scale-95 transition-all no-select shadow-xs"
+          style="background-color: #FF5500;"
           title="Admin Settings & System Maintenance"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-orange-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
@@ -193,7 +205,7 @@
     </div>
 
     <!-- Admin Status Banner (shown ONLY when authenticated in Admin Portal) -->
-    <div id="adminModeBanner" class="hidden bg-orange-600 text-white px-4 py-2 text-xs flex items-center justify-between shadow-xs border-b border-orange-700 transition-colors">
+    <div id="adminModeBanner" class="hidden text-white px-4 py-2 text-xs flex items-center justify-between shadow-xs border-b transition-colors" style="background-color: #FF5500; border-color: #e04b00;">
       <span class="flex items-center gap-1.5 font-bold tracking-wide">
         <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> Admin Portal Active
       </span>
@@ -233,32 +245,26 @@
         <p id="editFeedback" class="text-xs text-slate-400 h-5 mt-4 transition-opacity">Press Enter or click away to save</p>
       </div>
 
-      <!-- Action Stepper Buttons: + and - -->
+      <!-- Action Stepper Buttons: ONLY +1 and -1 in the EXACT SAME font size -->
       <div class="w-full max-w-[300px] flex items-center justify-between gap-4 mt-2">
-        <!-- Minus Button -->
+        <!-- Minus Button (ONLY -1, matching font size) -->
         <button 
           id="btnDecrement" 
           type="button" 
-          class="flex-1 h-20 sm:h-24 bg-rose-50 hover:bg-rose-100 active:bg-rose-200 border-2 border-rose-200 rounded-3xl flex flex-col items-center justify-center text-rose-600 font-bold active:scale-95 transition-all shadow-sm no-select group disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+          class="flex-1 h-20 sm:h-24 bg-rose-50 hover:bg-rose-100 active:bg-rose-200 border-2 border-rose-200 rounded-3xl flex items-center justify-center text-rose-600 active:scale-95 transition-all shadow-sm no-select group disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
           title="Decrease count"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" />
-          </svg>
-          <span class="text-xs font-semibold text-rose-500 mt-1">-<span class="step-label">1</span></span>
+          <span class="text-3xl sm:text-4xl font-extrabold tracking-tight font-sans select-none">-<span class="step-label">1</span></span>
         </button>
 
-        <!-- Plus Button -->
+        <!-- Plus Button (ONLY +1, matching font size) -->
         <button 
           id="btnIncrement" 
           type="button" 
-          class="flex-1 h-20 sm:h-24 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-3xl flex flex-col items-center justify-center font-bold active:scale-95 transition-all shadow-lg shadow-indigo-200 no-select group disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+          class="flex-1 h-20 sm:h-24 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-3xl flex items-center justify-center active:scale-95 transition-all shadow-lg shadow-indigo-200 no-select group disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
           title="Increase count"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-          <span class="text-xs font-semibold text-white/90 mt-1">+<span class="step-label">1</span></span>
+          <span class="text-3xl sm:text-4xl font-extrabold tracking-tight font-sans select-none">+<span class="step-label">1</span></span>
         </button>
       </div>
 
@@ -307,10 +313,11 @@
       <button 
         id="btnQuickReset" 
         type="button" 
-        class="hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-slate-200 text-slate-700 font-bold active:scale-95 transition-all no-select"
+        class="hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-slate-200 font-bold active:scale-95 transition-all no-select"
+        style="color: #FF5500;"
         title="Reset counter to 0"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.03 8.03 0 01-15.357-2m15.357 2H15" />
         </svg>
         <span>Reset to 0</span>
@@ -386,7 +393,7 @@
         
         <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white">
           <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-xl bg-orange-500 text-white flex items-center justify-center font-bold">
+            <div class="w-8 h-8 rounded-xl text-white flex items-center justify-center font-bold" style="background-color: #FF5500;">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
@@ -412,7 +419,7 @@
               placeholder="Administrator Passkey" 
               maxlength="20" 
               autocomplete="current-password"
-              class="w-full px-4 py-3 border border-slate-300 rounded-2xl text-center text-base font-mono tracking-widest outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all bg-slate-50"
+              class="w-full px-4 py-3 border border-slate-300 rounded-2xl text-center text-base font-mono tracking-widest outline-none transition-all bg-slate-50 focus:border-[#FF5500] focus:ring-2 focus:ring-[#FF5500]/20"
             />
           </div>
           <p id="adminAuthError" class="text-xs text-rose-600 font-semibold hidden"></p>
@@ -420,7 +427,8 @@
           <button 
             type="submit" 
             id="btnSubmitAdminAuth" 
-            class="w-full py-3 bg-orange-500 hover:bg-orange-600 active:scale-95 text-white text-xs font-extrabold rounded-2xl transition-all shadow-md shadow-orange-200 mt-1"
+            class="w-full py-3 text-white text-xs font-extrabold rounded-2xl transition-all shadow-md active:scale-95 mt-1"
+            style="background-color: #FF5500;"
           >
             Authenticate & Access Admin Portal
           </button>
@@ -437,7 +445,7 @@
         <!-- Modal Header -->
         <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white">
           <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-xl bg-orange-500 text-white flex items-center justify-center font-bold">
+            <div class="w-8 h-8 rounded-xl text-white flex items-center justify-center font-bold" style="background-color: #FF5500;">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -459,16 +467,16 @@
         <div class="p-5 overflow-y-auto max-h-[70vh] space-y-4 custom-scroll flex-1 text-slate-700">
           
           <!-- Section A: System Maintenance Mode -->
-          <div class="p-4 rounded-2xl bg-orange-50/60 border border-orange-200 flex items-center justify-between">
+          <div class="p-4 rounded-2xl bg-[#fff0e6] border border-[#ffccb3] flex items-center justify-between">
             <div class="pr-3">
-              <h4 class="text-sm font-bold text-orange-950 flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-orange-500"></span> System Maintenance Mode
+              <h4 class="text-sm font-bold flex items-center gap-1.5" style="color: #993300;">
+                <span class="w-2 h-2 rounded-full" style="background-color: #FF5500;"></span> System Maintenance Mode
               </h4>
-              <p class="text-xs text-orange-800/80 mt-0.5">Locks standard user buttons and edits. Only Admin can update.</p>
+              <p class="text-xs text-[#b33c00] mt-0.5">Locks standard user buttons and edits. Only Admin can update.</p>
             </div>
             <label class="relative inline-flex items-center cursor-pointer shrink-0">
               <input type="checkbox" id="maintenanceToggle" class="sr-only peer">
-              <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+              <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#FF5500]"></div>
             </label>
           </div>
 
@@ -489,7 +497,7 @@
 
             <div class="flex items-center justify-between text-xs">
               <span class="font-medium text-slate-600">Allow Negative Numbers:</span>
-              <input type="checkbox" id="settingAllowNegative" checked class="w-4 h-4 rounded text-orange-600 focus:ring-0 cursor-pointer">
+              <input type="checkbox" id="settingAllowNegative" checked class="w-4 h-4 rounded focus:ring-0 cursor-pointer" style="accent-color: #FF5500;">
             </div>
           </div>
 
@@ -520,7 +528,7 @@
         <!-- Settings Footer with Logout Option -->
         <div class="p-3 bg-slate-100 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
           <span class="font-semibold text-slate-700 flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-orange-500"></span> Admin Session Active
+            <span class="w-2 h-2 rounded-full" style="background-color: #FF5500;"></span> Admin Session Active
           </span>
           <button id="btnLogoutFromSettings" type="button" class="px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold active:scale-95 transition-all">
             Exit Admin / Logout
@@ -553,7 +561,7 @@
       step: 1,
       allowNegative: true,
       maintenanceMode: false,
-      currentPortal: 'user', // 'user' (Purple) | 'admin' (Orange)
+      currentPortal: 'user', // 'user' (Purple) | 'admin' (Orange #FF5500)
       adminToken: localStorage.getItem(STORAGE_KEY_ADMIN_TOKEN) || null,
       history: JSON.parse(localStorage.getItem(STORAGE_KEY_HISTORY) || '[]')
     };
@@ -764,7 +772,7 @@
     }
 
     // -------------------------------------------------------------
-    // HELPERS: TOAST & DATE FORMATTER
+    // HELPERS: TOAST & DATE FORMATTER ("11:13 PM Nov 1, 2026")
     // -------------------------------------------------------------
     let toastTimeout = null;
     function showToast(message, icon = '✨') {
@@ -780,19 +788,22 @@
     function formatDateTime(isoString) {
       const d = new Date(isoString);
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const date = `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+      const month = months[d.getMonth()];
+      const day = d.getDate();
+      const year = d.getFullYear();
       
       let hours = d.getHours();
       const minutes = String(d.getMinutes()).padStart(2, '0');
-      const seconds = String(d.getSeconds()).padStart(2, '0');
       const ampm = hours >= 12 ? 'PM' : 'AM';
-      
       hours = hours % 12;
       hours = hours ? hours : 12;
       const formattedHours = String(hours).padStart(2, '0');
       
-      const time = `${formattedHours}:${minutes}:${seconds} ${ampm}`;
-      return { date, time };
+      const time = `${formattedHours}:${minutes} ${ampm}`;
+      const date = `${month} ${day}, ${year}`;
+      // Exact user requirement: "11:13 PM Nov 1, 2026"
+      const fullFormatted = `${time} ${date}`;
+      return { date, time, fullFormatted };
     }
 
     function getAuthHeaders() {
@@ -810,12 +821,12 @@
       state.currentPortal = portal;
 
       if (portal === 'admin') {
-        // Orange / White Admin Portal Theme
+        // Orange (#FF5500) / White Admin Portal Theme
         document.body.classList.remove('portal-user');
         document.body.classList.add('portal-admin');
 
-        // Header role indicator
-        roleIndicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span> Admin Portal';
+        // Header role indicator with #FF5500
+        roleIndicator.innerHTML = '<span class="w-2 h-2 rounded-full animate-pulse" style="background-color: #FF5500;"></span> <span class="font-extrabold" style="color: #FF5500;">Admin Portal</span>';
         
         // Show Admin controls
         btnOpenSettings.classList.remove('hidden');
@@ -831,8 +842,8 @@
         document.body.classList.remove('portal-admin');
         document.body.classList.add('portal-user');
 
-        // Header role indicator
-        roleIndicator.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Standard Mode';
+        // Header role indicator for Moorthy
+        roleIndicator.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Standard Mode (Moorthy)';
 
         // Hide Admin-only controls from standard users
         btnOpenSettings.classList.add('hidden');
@@ -852,7 +863,7 @@
     // -------------------------------------------------------------
     // HISTORY RECORDING & RENDERING
     // -------------------------------------------------------------
-    function addHistoryRecord(action, prevVal, newVal, source = (state.currentPortal === 'admin' ? 'Admin' : 'User')) {
+    function addHistoryRecord(action, prevVal, newVal, source = (state.currentPortal === 'admin' ? 'Admin' : 'Moorthy')) {
       const now = new Date().toISOString();
       const record = {
         id: 'hist_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
@@ -861,7 +872,7 @@
         prevValue: prevVal,
         newValue: newVal,
         difference: newVal - prevVal,
-        source: source
+        source: source === 'Admin' ? 'Admin' : 'Moorthy'
       };
 
       state.history.unshift(record);
@@ -893,7 +904,7 @@
         recentHistoryContainer.innerHTML = `
           <div class="py-4 px-3 rounded-2xl bg-slate-50 border border-dashed border-slate-200 text-center text-slate-400">
             <p class="text-xs font-semibold text-slate-500">No recent activity yet</p>
-            <p class="text-[10px] text-slate-400 mt-0.5">Use + / − buttons or click count to log changes</p>
+            <p class="text-[10px] text-slate-400 mt-0.5">Use +1 / −1 buttons or click count to log changes</p>
           </div>
         `;
         return;
@@ -901,37 +912,38 @@
 
       const latestItems = state.history.slice(0, 3);
       recentHistoryContainer.innerHTML = latestItems.map(item => {
-        const { date, time } = formatDateTime(item.timestamp);
+        const { fullFormatted } = formatDateTime(item.timestamp);
         let badgeColor = 'bg-slate-100 text-slate-700 border-slate-200';
-        let actionLabel = item.action || 'Modified';
         let diffSign = item.difference > 0 ? `+${item.difference}` : `${item.difference}`;
         let iconSymbol = '•';
 
+        const isAdmin = item.source === 'Admin';
+        const userName = isAdmin ? 'Admin' : 'Moorthy';
+        const absDiff = Math.abs(item.difference) || 1;
         const normAction = (item.action || '').toLowerCase();
+        let actionLabel = '';
+
         if (normAction === 'increment') {
           badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-          actionLabel = '+ Inc';
+          actionLabel = `+${absDiff} ${userName}`;
           iconSymbol = '+';
         } else if (normAction === 'decrement') {
           badgeColor = 'bg-rose-50 text-rose-700 border-rose-200';
-          actionLabel = '− Dec';
+          actionLabel = `-${absDiff} ${userName}`;
           iconSymbol = '−';
         } else if (normAction === 'manual edit' || normAction === 'direct_edit') {
-          badgeColor = state.currentPortal === 'admin' 
-            ? 'bg-orange-50 text-orange-700 border-orange-200' 
+          badgeColor = isAdmin 
+            ? 'bg-[#fff0e6] text-[#FF5500] border-[#ffccb3]' 
             : 'bg-indigo-50 text-indigo-700 border-indigo-200';
-          actionLabel = '✏️ Edit';
+          actionLabel = `✏️ Edit ${userName}`;
           iconSymbol = '✎';
         } else if (normAction === 'reset') {
           badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
-          actionLabel = '🔄 Reset';
+          actionLabel = `🔄 Reset ${userName}`;
           iconSymbol = '↺';
+        } else {
+          actionLabel = `${item.action} ${userName}`;
         }
-
-        const isAdmin = item.source === 'Admin';
-        const rolePill = isAdmin
-          ? '<span class="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-orange-100 text-orange-700 border border-orange-200">Admin</span>'
-          : '<span class="text-[9px] font-bold uppercase px-1.5 py-0.2 rounded bg-slate-200 text-slate-700">User</span>';
 
         return `
           <div class="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100/90 border border-slate-200/80 flex items-center justify-between text-xs transition-colors">
@@ -942,17 +954,16 @@
               <div class="flex flex-col">
                 <div class="flex items-center gap-1.5">
                   <span class="font-bold text-slate-800 text-xs">${actionLabel}</span>
-                  ${rolePill}
                 </div>
                 <div class="text-[10px] text-slate-400">
-                  ${date} at ${time}
+                  ${fullFormatted}
                 </div>
               </div>
             </div>
             
             <div class="text-right">
               <div class="font-mono text-xs font-bold text-slate-800">
-                ${item.prevValue} &rarr; <span class="${state.currentPortal === 'admin' ? 'text-orange-600' : 'text-indigo-600'} font-extrabold text-sm">${item.newValue}</span>
+                ${item.prevValue} &rarr; <span class="${isAdmin ? 'text-[#FF5500]' : 'text-indigo-600'} font-extrabold text-sm">${item.newValue}</span>
               </div>
               <div class="text-[10px] font-mono font-semibold ${item.difference >= 0 ? 'text-emerald-600' : 'text-rose-500'}">
                 (${diffSign})
@@ -973,39 +984,40 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
             <p class="text-xs font-semibold">No records found</p>
-            <p class="text-[11px] text-slate-400">Change values or use + / − to generate history</p>
+            <p class="text-[11px] text-slate-400">Change values or use +1 / −1 to generate history</p>
           </div>
         `;
         return;
       }
 
       historyListContainer.innerHTML = state.history.map(item => {
-        const { date, time } = formatDateTime(item.timestamp);
+        const { fullFormatted } = formatDateTime(item.timestamp);
         let badgeColor = 'bg-slate-100 text-slate-700 border-slate-200';
-        let actionLabel = item.action || 'Modified';
         let diffSign = item.difference > 0 ? `+${item.difference}` : `${item.difference}`;
 
+        const isAdmin = item.source === 'Admin';
+        const userName = isAdmin ? 'Admin' : 'Moorthy';
+        const absDiff = Math.abs(item.difference) || 1;
         const normAction = (item.action || '').toLowerCase();
+        let actionLabel = '';
+
         if (normAction === 'increment') {
           badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-          actionLabel = '+ Increment';
+          actionLabel = `+${absDiff} ${userName}`;
         } else if (normAction === 'decrement') {
           badgeColor = 'bg-rose-50 text-rose-700 border-rose-200';
-          actionLabel = '− Decrement';
+          actionLabel = `-${absDiff} ${userName}`;
         } else if (normAction === 'manual edit' || normAction === 'direct_edit') {
-          badgeColor = state.currentPortal === 'admin' 
-            ? 'bg-orange-50 text-orange-700 border-orange-200' 
+          badgeColor = isAdmin 
+            ? 'bg-[#fff0e6] text-[#FF5500] border-[#ffccb3]' 
             : 'bg-indigo-50 text-indigo-700 border-indigo-200';
-          actionLabel = '✏️ Manual Edit';
+          actionLabel = `✏️ Edit ${userName}`;
         } else if (normAction === 'reset') {
           badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
-          actionLabel = '🔄 Reset to 0';
+          actionLabel = `🔄 Reset ${userName}`;
+        } else {
+          actionLabel = `${item.action} ${userName}`;
         }
-
-        const isAdmin = item.source === 'Admin';
-        const rolePill = isAdmin
-          ? '<span class="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 border border-orange-200">Admin</span>'
-          : '<span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">User</span>';
 
         return `
           <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs transition-all hover:bg-slate-100/70">
@@ -1014,18 +1026,15 @@
                 <span class="px-2 py-0.5 rounded-md font-bold text-[10px] border ${badgeColor}">
                   ${actionLabel}
                 </span>
-                ${rolePill}
               </div>
-              <div class="flex items-center gap-1 text-[11px] text-slate-400 mt-1">
-                <span>${date}</span>
-                <span>•</span>
-                <span>${time}</span>
+              <div class="text-[11px] text-slate-400 mt-1">
+                ${fullFormatted}
               </div>
             </div>
             
             <div class="text-right">
               <div class="font-mono text-xs font-bold text-slate-800">
-                ${item.prevValue} &rarr; <span class="${state.currentPortal === 'admin' ? 'text-orange-600' : 'text-indigo-600'} text-sm font-extrabold">${item.newValue}</span>
+                ${item.prevValue} &rarr; <span class="${isAdmin ? 'text-[#FF5500]' : 'text-indigo-600'} text-sm font-extrabold">${item.newValue}</span>
               </div>
               <div class="text-[10px] font-mono text-slate-400">
                 (${diffSign})
@@ -1041,8 +1050,8 @@
         iso = state.history[0].timestamp;
       }
       if (iso) {
-        const { date, time } = formatDateTime(iso);
-        lastUpdatedLabel.innerText = `${date} at ${time}`;
+        const { fullFormatted } = formatDateTime(iso);
+        lastUpdatedLabel.innerText = fullFormatted;
       } else {
         lastUpdatedLabel.innerText = 'No updates yet';
       }
@@ -1085,7 +1094,7 @@
       countInput.value = state.count;
 
       localStorage.setItem(STORAGE_KEY_COUNT, state.count.toString());
-      addHistoryRecord(actionType, prev, state.count, state.currentPortal === 'admin' ? 'Admin' : 'User');
+      addHistoryRecord(actionType, prev, state.count, state.currentPortal === 'admin' ? 'Admin' : 'Moorthy');
 
       // Visual pulse feedback
       countInput.classList.add('scale-105');
@@ -1204,7 +1213,7 @@
       isUserEditing = true;
       previousFocusedValue = state.count;
       editFeedback.innerText = 'Editing... Press Enter to confirm';
-      editFeedback.className = `text-xs h-5 mt-4 ${state.currentPortal === 'admin' ? 'text-orange-600' : 'text-indigo-600'} font-semibold transition-opacity`;
+      editFeedback.className = `text-xs h-5 mt-4 ${state.currentPortal === 'admin' ? 'text-[#FF5500]' : 'text-indigo-600'} font-semibold transition-opacity`;
     });
 
     countInput.addEventListener('blur', () => {
@@ -1507,10 +1516,11 @@
         showToast('No history records to export', 'ℹ️');
         return;
       }
-      let csvContent = "data:text/csv;charset=utf-8,ID,Date,Time,Role,Action,PreviousValue,NewValue,Difference\n";
+      let csvContent = "data:text/csv;charset=utf-8,ID,Timestamp,User,Action,PreviousValue,NewValue,Difference\n";
       state.history.forEach(item => {
-        const { date, time } = formatDateTime(item.timestamp);
-        csvContent += `"${item.id}","${date}","${time}","${item.source || 'User'}","${item.action || 'Modify'}",${item.prevValue},${item.newValue},${item.difference}\n`;
+        const { fullFormatted } = formatDateTime(item.timestamp);
+        const userName = item.source === 'Admin' ? 'Admin' : 'Moorthy';
+        csvContent += `"${item.id}","${fullFormatted}","${userName}","${item.action || 'Modify'}",${item.prevValue},${item.newValue},${item.difference}\n`;
       });
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
